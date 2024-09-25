@@ -1,15 +1,15 @@
 {
-  "name": "todo-app",
+  "name": "battleship-game",
   "version": "1.0.0",
-  "description": "",
+  "description": "A battleship game with TDD",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --open",
     "build": "webpack --mode production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "graham shamran",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.24.4",
@@ -24,6 +24,7 @@
     "style-loader": "^4.0.0",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.0.4",
+    "jest": "^29.4.3" 
   }
 }
