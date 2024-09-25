@@ -4,7 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
-    entry: './src/index.js',
+    entry: './src/controller/index.js',
     output: {
         filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
@@ -34,7 +34,7 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/index.html',  // Path to your HTML template
+            template: './src/view/index.html',  // Path to your HTML template
             filename: 'index.html'
         }),
         new CleanWebpackPlugin(), // Clean the dist folder before each build
