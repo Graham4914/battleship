@@ -1,64 +1,59 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const webpack = require('webpack');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import webpack from 'webpack';
 
-module.exports = {
+// Use fileURLToPath and import.meta.url to define __dirname in ES6 module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
     entry: './src/controller/index.js',
     output: {
         filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
     },
-
     module: {
         rules: [
             {
-                test: /\.css$/, // For CSS files
-                use: ['style-loader', 'css-loader']
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(js)$/, // For JavaScript files
+                test: /\.(js)$/,
                 exclude: /node_modules/,
-                use: ['babel-loader']
+                use: ['babel-loader'],
             },
             {
-                test: /\.(png|svg|jpg|gif)$/, // For image files
-                use: ['file-loader']
+                test: /\.(png|svg|jpg|gif)$/,
+                use: ['file-loader'],
             },
             {
-                test: /\.(woff|woff2|eot|ttf|otf)$/, // For font files
-                use: ['file-loader']
-            }
-        ]
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                use: ['file-loader'],
+            },
+        ],
     },
-
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/view/index.html',  // Path to your HTML template
-            filename: 'index.html'
+            template: './src/view/index.html',
+            filename: 'index.html',
         }),
-        new CleanWebpackPlugin(), // Clean the dist folder before each build
+        new CleanWebpackPlugin(),
         new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-        })
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+        }),
     ],
-
     devServer: {
-        static: './dist', // Where dev server will look for static files, not compiled at runtime
-        open: true, // Open the page in browser
-        hot: true
+        static: './dist',
+        open: true,
+        hot: true,
     },
-
     optimization: {
         splitChunks: {
             chunks: 'all',
         },
     },
-
-
-
-    mode: 'development', // Use 'production' for minified output
-
-
-
+    mode: 'development',
 };

@@ -7,7 +7,7 @@ describe('Player Factory', () => {
       const player = Player();
       const enemyBoard = Gameboard();
       const ship = Ship(3); 
-      enemyBoard.placeShip(ship, [0, 0], 'horizontal');
+      enemyBoard.placeShip(ship, 0, 0, 'horizontal');
       player.attack(enemyBoard, [0, 0]);
       expect(ship.hits).toBe(1); // The ship should register a hit
     });
