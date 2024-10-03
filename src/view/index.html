@@ -8,7 +8,33 @@
 </head>
 
 <body>
-    <h1>Hello World</h1>
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>Battleship Game</h1>
+        <button id="start-game-btn">Start Game</button>
+    </div>
+
+    <!-- Game Container (Hidden initially) -->
+    <div class="game-container" id="game-container" style="display: none;">
+        <header>
+            <h1>Battleship</h1>
+        </header>
+        <div class="status-message">
+            <p>Place your ships...</p>
+        </div>
+        <div class="axis-toggle">
+            <button id="toggle-axis-btn">Toggle Axis</button>
+        </div>
+
+        <div class="grid-container">
+            <div class="grid player-grid" id="player-grid">
+                <!-- Player grid -->
+            </div>
+            <div class="grid computer-grid" id="computer-grid">
+                <!-- Computer grid -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

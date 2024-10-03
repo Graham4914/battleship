@@ -1,4 +1,4 @@
-import { Ship } from './ship';
+import { Ship } from './ship.js';
 
 export function Gameboard() {
   // Ensure the board is a 10x10 grid of null values
@@ -6,35 +6,38 @@ export function Gameboard() {
   const missedShots = [];
   const ships = [];
 
-  function placeShip(ship, startX, startY, direction = 'horizontal') {
+  function placeShip(ship, x, y, direction = 'horizontal') {
     const { length } = ship;
 
-    if (startX < 0 || startX >= 10 || startY < 0 || startY >= 10) {
-        throw new Error('Invalid starting position for ship placement');
-    }
-
+    // Check if the ship can be placed without going out of bounds
     if (direction === 'horizontal') {
-        if (startY + length > 10) {
-            throw new Error('Ship placement out of bounds horizontally');
+        if (y + length > 10 || y < 0) {
+            throw new Error('Invalid starting position for ship placement');
         }
         for (let i = 0; i < length; i++) {
-            if (board[startX][startY + i] === undefined) {
-                throw new Error('Invalid ship placement: index out of bounds');
+            if (board[x][y + i] !== null) {
+                throw new Error('Position is already occupied');
             }
-            board[startX][startY + i] = ship;
+        }
+        // Place the ship on the board
+        for (let i = 0; i < length; i++) {
+            board[x][y + i] = ship;
         }
     } else if (direction === 'vertical') {
-        if (startX + length > 10) {
-            throw new Error('Ship placement out of bounds vertically');
+        if (x + length > 10 || x < 0) {
+            throw new Error('Invalid starting position for ship placement');
         }
         for (let i = 0; i < length; i++) {
-            if (board[startX + i][startY] === undefined) {
-                throw new Error('Invalid ship placement: index out of bounds');
+            if (board[x + i][y] !== null) {
+                throw new Error('Position is already occupied');
             }
-            board[startX + i][startY] = ship;
+        }
+        // Place the ship on the board
+        for (let i = 0; i < length; i++) {
+            board[x + i][y] = ship;
         }
     }
-    ships.push(ship);
+    return true;  // Return true if ship placement succeeds
 }
   function receiveAttack(coords) {
       const [x, y] = coords;

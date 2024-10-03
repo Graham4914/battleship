@@ -1,1 +1,146 @@
-/* This is a placeholder for style.css */ 
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Flexbox container for the entire game */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header styling */
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Status message styling */
+.status-message {
+    margin: 15px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+}
+
+/* Center only the player grid initially */
+.grid-container {
+    display: flex;
+    justify-content: center;  /* Center the player grid */
+    width: 600px;  /* Set width for the player grid */
+    max-width: 100vw;
+    margin: 0 40px;
+    /* gap: 100px; */
+    transition: width 0.5s ease, justify-content 0.5s ease;
+    position: relative;
+}
+
+/* Styling for individual grids (player and computer) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 50px);  /* 10 columns with 50px width each */
+    grid-template-rows: repeat(10, 50px);     /* 10 rows with 50px height each */
+    gap: 2px;
+    background-color: #fff;
+    border: 2px solid #333;
+}
+
+/* Hide the computer grid and make sure it doesn't affect layout */
+#computer-grid {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.5s ease, width 0s 0.5s, height 0s 0.5s;  /* Reveal after 0.5s */
+}
+
+/* When battle phase starts, show the computer grid */
+.grid-container.show-battle #computer-grid {
+    opacity: 1;
+    width: 520px;  /* Set the correct width for the grid */
+    height: auto;
+    transition: opacity 0.5s ease; /* Remove width/height transition delay */
+}
+
+/* Slide effect for player grid */
+.grid-container.slide-left {
+    justify-content: space-between; /* Move the player grid to the left */
+    width: 1500px; /* Expand the container width for both grids */
+}
+
+/* Grid cells */
+.grid div {
+    background-color: #ddd;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid #aaa;
+}
+
+.grid div.highlight {
+    background-color: rgba(0, 128, 0, 0.5); /* Green highlight for hover */
+}
+
+.grid div.placed-ship {
+    background-color: #1e90ff;  /* Blue color for placed ships */
+    border: 1px solid #333;
+}
+
+.grid div:hover {
+    background-color: #bbb;
+    border-color: #000;  /* Darkens the grid line on hover */
+}
+
+/* Player Grid */
+#player-grid {
+    border-color: #4CAF50;
+}
+
+/* Computer Grid */
+#computer-grid {
+    border-color: #F44336;
+}
+
+.axis-toggle {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#toggle-axis-btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+}
+#toggle-axis-btn {
+    transition: opacity 0.5s ease;
+}
+
+
+/* Responsive layout */
+@media (max-width: 768px) {
+    .grid-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .grid {
+        margin-bottom: 20px;
+    }
+}
