@@ -1,5 +1,6 @@
 import { Gameboard } from "../model/gameboard.js";
 import { GridView } from "../view/gridView.js";
+import { Ship } from "../model/ship.js";
 
 // Initialize the gameboards for player and computer
 const playerBoard = Gameboard();
@@ -13,6 +14,12 @@ const statusMessageElement = document.querySelector('.status-message');
 // Initialize grids
 GridView.createGrid(playerGridElement, playerBoard.board);
 GridView.createGrid(computerGridElement, computerBoard.board);
+
+function updateStatus(message) {
+    setTimeout(() => {
+        statusMessageElement.textContent = message;
+    }, 1000);  // 1-second delay for smoother flow
+}
 
 let allShipsPlaced = false;  // Flag to track if all ships have been placed
 let currentShipIndex = 0;
@@ -33,8 +40,8 @@ function handleShipPlacement(gridElement, playerBoard) {
 
     statusMessageElement.innerHTML = `Place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
 
-    // Mouseover for cell highlighting
-    gridElement.addEventListener('mouseover', (e) => {
+     // Mouseover for cell highlighting
+     const mouseoverHandler = (e) => {
         if (allShipsPlaced) return;  // Prevent further highlights after all ships are placed
 
         const cell = e.target;
@@ -51,41 +58,53 @@ function handleShipPlacement(gridElement, playerBoard) {
         if (canPlaceShip(playerBoard.board, x, y, currentShip.length, isHorizontal)) {
             highlightCells(gridElement, x, y, currentShip.length, isHorizontal);
         }
-    });
+    };
 
     // Handle ship placement on click
-gridElement.addEventListener('click', (e) => {
-    if (allShipsPlaced) return;  // Prevent placing ships after all are placed
-
-    const cell = e.target;
-    const cellIndex = Array.from(gridElement.children).indexOf(cell);
-    const x = Math.floor(cellIndex / 10);
-    const y = cellIndex % 10;
-    const currentShip = ships[currentShipIndex];
-
-    // Try to place the ship
-    try {
-        const placed = playerBoard.placeShip({ length: currentShip.length }, x, y, isHorizontal ? 'horizontal' : 'vertical');
+    gridElement.addEventListener('click', (e) => {
+        if (allShipsPlaced) return;  // Prevent placing ships after all are placed
+    
+        const cell = e.target;
+        const cellIndex = Array.from(gridElement.children).indexOf(cell);
+        const x = Math.floor(cellIndex / 10);
+        const y = cellIndex % 10;
+        const currentShip = new Ship(ships[currentShipIndex].length);  // Create a new Ship object for each ship placement
+    
+        console.log(`Trying to place ${currentShip.name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
+    
+        // Check if the ship can be placed at the desired location
+        const placed = placeShipSafely(playerBoard.board, x, y, currentShip, isHorizontal);
+    
         if (placed) {
-            // Render the ship permanently after placing it
+            console.log('Ship placed successfully');
             GridView.renderShip(gridElement, currentShip, x, y, isHorizontal);
-
-            // Move to the next ship
+    
+            // Clear highlights and temporarily remove mouseover
+            clearHighlights(gridElement);
+            gridElement.removeEventListener('mouseover', mouseoverHandler);
+    
+            // Move to the next ship or start battle phase
             currentShipIndex++;
             if (currentShipIndex >= ships.length) {
                 allShipsPlaced = true;
                 statusMessageElement.textContent = 'All ships placed. Battle begins!';
-                startBattlePhase();  // Start the battle once all ships are placed
+                startBattlePhase();
             } else {
                 statusMessageElement.textContent = `Place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
             }
+    
+            // Add mousemove event to reactivate hover behavior only when the mouse moves
+            gridElement.addEventListener('mousemove', () => {
+                gridElement.addEventListener('mouseover', mouseoverHandler);
+            }, { once: true });
         } else {
-            console.log('Invalid placement');
+            console.log('Failed to place ship due to overlap or invalid position');
         }
-    } catch (error) {
-        console.error(error.message);
-    }
-});
+    });
+    
+        // Initialize hover handler
+        gridElement.addEventListener('mouseover', mouseoverHandler);
+    
 
     // Rotate the ship when 'r' is pressed
     document.addEventListener('keydown', (e) => {
@@ -108,18 +127,47 @@ const toggleAxisButton = document.getElementById('toggle-axis-btn');
 toggleAxisButton.addEventListener('click', () => {
     rotateShip();  // Call the rotate function when the button is clicked
 });
+function placeShipSafely(board, x, y, ship, isHorizontal) {
+    if (canPlaceShip(board, x, y, ship.length, isHorizontal)) {
+        for (let i = 0; i < ship.length; i++) {
+            const targetX = isHorizontal ? x : x + i;
+            const targetY = isHorizontal ? y + i : y;
+
+            // Explicitly place the ship object, not just its length
+            console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
+            board[targetX][targetY] = ship;  // Place the whole ship object
+        }
+        return true;
+    } else {
+        console.log(`Cannot place ship: invalid position or overlap at (${x}, ${y})`);
+        return false;
+    }
+}
 
 // Helper function to check if a ship can be placed
 function canPlaceShip(board, x, y, length, isHorizontal) {
+    // Horizontal placement check
     if (isHorizontal) {
-        if (y + length > 10 || y < 0) return false;  // Horizontal bounds check
-        for (let i = 0; i < length; i++) {
-            if (board[x][y + i] !== null) return false;  // Ensure cells are empty
+        if (y + length > 10 || y < 0) {
+            console.log(`Ship exceeds horizontal bounds at (${x}, ${y})`);
+            return false;
         }
-    } else {
-        if (x + length > 10 || x < 0) return false;  // Vertical bounds check
         for (let i = 0; i < length; i++) {
-            if (board[x + i][y] !== null) return false;  // Ensure cells are empty
+            if (board[x][y + i] !== null) {
+                console.log(`Cell (${x}, ${y + i}) is already occupied`);
+                return false;
+            }
+        }
+    } else {  // Vertical placement check
+        if (x + length > 10 || x < 0) {
+            console.log(`Ship exceeds vertical bounds at (${x}, ${y})`);
+            return false;
+        }
+        for (let i = 0; i < length; i++) {
+            if (board[x + i][y] !== null) {
+                console.log(`Cell (${x + i}, ${y}) is already occupied`);
+                return false;
+            }
         }
     }
     return true;
@@ -144,25 +192,36 @@ function clearHighlights(gridElement) {
 }
 
 // Randomly place ships for the computer
+
 function placeComputerShips() {
     const computerShips = [
-        { name: 'Destroyer', length: 2 },
-        { name: 'Submarine', length: 3 },
-        { name: 'Cruiser', length: 3 },
-        { name: 'Battleship', length: 4 },
-        { name: 'Carrier', length: 5 }
+        { name: 'Destroyer', length: 2, ship: new Ship(2) },
+        { name: 'Submarine', length: 3, ship: new Ship(3) },
+        { name: 'Cruiser', length: 3, ship: new Ship(3) },
+        { name: 'Battleship', length: 4, ship: new Ship(4) },
+        { name: 'Carrier', length: 5, ship: new Ship(5) }
     ];
 
-    computerShips.forEach(ship => {
+    computerShips.forEach(({ name, ship }) => {
         let placed = false;
-        while (!placed) {
+        let attempts = 0;
+    
+        while (!placed && attempts < 50) {
             const x = Math.floor(Math.random() * 10);
             const y = Math.floor(Math.random() * 10);
             const isHorizontal = Math.random() < 0.5;
-            placed = computerBoard.placeShip({ length: ship.length }, x, y, isHorizontal ? 'horizontal' : 'vertical');
+    
+            console.log(`Trying to place ${name} at (${x}, ${y})`);
+    
+            placed = placeShipSafely(computerBoard.board, x, y, ship, isHorizontal);
+    
+            if (placed) {
+                console.log(`${name} placed successfully.`);
+                GridView.renderShip(computerGridElement, ship, x, y, isHorizontal); // Renders ship on grid
+            }
+            attempts++;
         }
     });
-    console.log("Computer ships placed.");
 }
 
 const toggleButton = document.getElementById('toggle-axis-btn');
@@ -175,12 +234,12 @@ function startBattlePhase() {
     gridContainer.classList.add('slide-left');
     gridContainer.classList.add('show-battle');  // Show the computer grid
     
-    statusMessageElement.textContent = 'Attack the enemy ships!';
 
-    // Call the function to place the computer's ships randomly
+    updateStatus('Computer is placing ships...');
     placeComputerShips();
 
     // Add event listeners for player attacks
+    updateStatus('Attack the enemy ships!');
     addPlayerAttackListener();
 }
 // Handle player attacks on the computer's grid
@@ -191,18 +250,35 @@ function addPlayerAttackListener() {
         const x = Math.floor(cellIndex / 10);
         const y = cellIndex % 10;
 
+        // Prevent attacking the same cell twice
+        if (cell.classList.contains('hit') || cell.classList.contains('miss')) {
+            return;  // Already attacked
+        }
+
         // Handle attack logic (e.g., hit or miss) on the computer's board
         const attackResult = computerBoard.receiveAttack([x, y]);
-        GridView.updateCell(cell, attackResult);  // Update cell color based on result (hit/miss)
+        
+        if (attackResult === 'hit') {
+            cell.classList.add('hit');
+            updateStatus('Player hit a ship!');
+        } else {
+            cell.classList.add('miss');
+            updateStatus('Player missed.');
+        }
 
         // Check if the player has won
         if (computerBoard.allShipsSunk()) {
-            statusMessageElement.textContent = 'You win! All enemy ships are sunk!';
+            updateStatus('You win! All enemy ships are sunk!');
         } else {
-            computerAttack();  // Trigger computer's turn to attack
+            // After player's turn, trigger computer's turn with a slight delay for realism
+            setTimeout(() => {
+                updateStatus('Computer\'s turn...');
+                computerAttack();
+            }, 1500);  // Delay by 1.5 seconds before the computer's turn
         }
     });
 }
+
 
 
 // In your gameController.js or similar entry point
@@ -231,18 +307,22 @@ function computerAttack() {
             const attackResult = playerBoard.receiveAttack([x, y]);
             const playerCell = playerGridElement.children[x * 10 + y]; // Access the corresponding grid cell
 
-            GridView.updateCell(playerCell, attackResult);  // Update the player's grid based on the attack result
+            if (attackResult === 'hit') {
+                playerCell.classList.add('hit');
+                console.log('Computer hit a ship!');
+            } else {
+                playerCell.classList.add('miss');
+                console.log('Computer missed.');
+            }
 
             // Check if all player's ships are sunk
             if (playerBoard.allShipsSunk()) {
                 statusMessageElement.textContent = 'Computer wins! All your ships are sunk!';
-            } else {
-                statusMessageElement.textContent = 'Computer attacked!';
             }
+
             attackSuccessful = true;  // Exit the loop after a successful attack
         }
     }
-    console.log('Computer attacks!');
 }
 
 

@@ -39,14 +39,22 @@ export function Gameboard() {
     }
     return true;  // Return true if ship placement succeeds
 }
-  function receiveAttack(coords) {
-      const [x, y] = coords;
-      if (board[x][y]) {
-          board[x][y].hit();
-      } else {
-          missedShots.push(coords);
-      }
-  }
+function receiveAttack([x, y]) {
+    const target = board[x][y];
+
+    if (target === null) {
+        console.log('Miss');
+        missedShots.push([x, y]);
+        return 'miss';
+    } else if (typeof target === 'object' && typeof target.hit === 'function') {
+        target.hit();  // Call the hit method on the ship
+        console.log('Hit');
+        return 'hit';
+    } else {
+        console.error('Invalid hit detection');
+        return 'error';
+    }
+}
 
   function allShipsSunk() {
       return ships.every(ship => ship.isSunk());
