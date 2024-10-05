@@ -131,6 +131,26 @@ header h1 {
 #toggle-axis-btn {
     transition: opacity 0.5s ease;
 }
+/* hits and misses on player grids */
+
+.cell.placed-ship.hit {
+    background-color: red;  /* Mark hits with red */
+}
+
+.cell.miss {
+    background-color: blue;  /* Mark misses with blue */
+}
+
+/* .cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #333;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 16px;
+    cursor: pointer;
+} */
 
 
 /* Responsive layout */

@@ -358,47 +358,81 @@ startGameBtn.addEventListener('click', () => {
 });
 
 // function for computer's attack logic
+let lastHit = null;  // Store the last hit position
+let potentialTargets = [];  // List of adjacent cells to check
+
 function computerAttack() {
     let attackSuccessful = false;
+
+    if (potentialTargets.length > 0) {
+        // Prioritize hitting adjacent cells if there was a previous hit
+        const nextTarget = potentialTargets.pop();
+        const [x, y] = nextTarget;
+        
+        if (playerBoard.board[x][y] === null || typeof playerBoard.board[x][y] === 'object') {
+            attackCell(x, y);
+            attackSuccessful = true;
+        }
+    }
 
     while (!attackSuccessful) {
         // Randomly select coordinates to attack
         const x = Math.floor(Math.random() * 10);
         const y = Math.floor(Math.random() * 10);
 
-        // Check if the cell has already been attacked
         if (playerBoard.board[x][y] === null || typeof playerBoard.board[x][y] === 'object') {
-            const attackResult = playerBoard.receiveAttack([x, y]);
-            const playerCell = playerGridElement.children[x * 10 + y]; // Access the corresponding grid cell
-
-            if (attackResult === 'hit') {
-                playerCell.classList.add('hit');
-                updateStatus('Computer hit your ship!');
-            } else if (attackResult === 'sunk') {
-                playerCell.classList.add('hit');
-                updateStatus('Computer sank your ship!');
-            } else {
-                playerCell.classList.add('miss');
-                updateStatus('Computer missed.');
-            }
-
-            // Check if all player's ships are sunk
-            if (playerBoard.allShipsSunk()) {
-                updateStatus('Computer wins! All your ships are sunk!');
-                endGame('computer');
-            }
-
-            attackSuccessful = true;  // Exit the loop after a successful attack
+            attackCell(x, y);
+            attackSuccessful = true;
         }
     }
 
     // After computer's turn, switch back to player
     setTimeout(() => {
-        updateStatus('Player\'s turn!');
+        updateStatus("Player's turn!");
     }, 1500);
 }
 
+function attackCell(x, y) {
+    const attackResult = playerBoard.receiveAttack([x, y]);
+    const playerCell = playerGridElement.children[x * 10 + y]; // Access the corresponding grid cell
 
+    if (attackResult === 'hit') {
+        playerCell.classList.add('hit');
+        updateStatus('Computer hit your ship!');
+        lastHit = [x, y];
+        addAdjacentCellsToTargets(x, y);  // Add adjacent cells to potential targets
+    } else if (attackResult === 'sunk') {
+        playerCell.classList.add('hit');
+        updateStatus('Computer sank your ship!');
+        lastHit = null;
+        potentialTargets = [];  // Clear potential targets since the ship is sunk
+    } else {
+        playerCell.classList.add('miss');
+        updateStatus('Computer missed.');
+    }
+
+    // Check if all player's ships are sunk
+    if (playerBoard.allShipsSunk()) {
+        updateStatus('Computer wins! All your ships are sunk!');
+        endGame('computer');
+    }
+}
+
+// Helper function to add adjacent cells to potential targets
+function addAdjacentCellsToTargets(x, y) {
+    const directions = [
+        [x - 1, y], // up
+        [x + 1, y], // down
+        [x, y - 1], // left
+        [x, y + 1]  // right
+    ];
+
+    directions.forEach(([newX, newY]) => {
+        if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {  // Ensure it's within bounds
+            potentialTargets.push([newX, newY]);
+        }
+    });
+}
 
 
 
