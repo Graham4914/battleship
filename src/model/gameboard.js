@@ -6,6 +6,44 @@ export function Gameboard() {
   const missedShots = [];
   const ships = [];
 
+  function placeShipSafely( x, y, ship, isHorizontal) {
+    // Check if the ship can be placed within bounds
+    if (isHorizontal) {
+        if (y + ship.length > 10 || y < 0) {
+            console.log(`Ship exceeds horizontal bounds at (${x}, ${y})`);
+            return false;
+        }
+    } else {
+        if (x + ship.length > 10 || x < 0) {
+            console.log(`Ship exceeds vertical bounds at (${x}, ${y})`);
+            return false;
+        }
+    }
+
+    // Check for overlaps
+    for (let i = 0; i < ship.length; i++) {
+        const targetX = isHorizontal ? x : x + i;
+        const targetY = isHorizontal ? y + i : y;
+
+        if (board[targetX][targetY] !== null) {
+            console.log(`Cell (${targetX}, ${targetY}) is already occupied`);
+            return false;
+        }
+    }
+
+    // Place the ship on the board
+    for (let i = 0; i < ship.length; i++) {
+        const targetX = isHorizontal ? x : x + i;
+        const targetY = isHorizontal ? y + i : y;
+
+        board[targetX][targetY] = ship;
+        console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
+    }
+
+    return true;
+}
+
+
 function placeShip(ship, x, y, direction = 'horizontal') {
     console.log(`Placing ship with length ${ship.length} at (${x}, ${y})`);
     const { length } = ship;
@@ -68,6 +106,29 @@ function receiveAttack([x, y]) {
         return 'error';
     }
 }
+
+function attackCell(x, y) {
+    const target = board[x][y];  // Access the targeted cell on the board
+
+    if (target === null) {
+        console.log('Miss');
+        missedShots.push([x, y]);  // Track missed shots
+        return { result: 'miss', coordinates: [x, y] };  // Return result for controller to handle
+    } else if (typeof target === 'object' && typeof target.hit === 'function') {
+        target.hit();  // Register the hit on the ship
+        console.log('Hit');
+
+        if (target.isSunk()) {
+            console.log('Ship has been sunk!');
+            return { result: 'sunk', coordinates: [x, y] };
+        }
+        return { result: 'hit', coordinates: [x, y] };
+    } else {
+        console.error('Invalid hit detection');
+        return { result: 'error', coordinates: [x, y] };
+    }
+}
+
 function allShipsSunk() {
     console.log('Checking if all ships are sunk...');
     console.log('Ships array in allShipsSunk:', ships);  // <-- Add this line
@@ -83,7 +144,9 @@ function allShipsSunk() {
 
   return {
       placeShip,
+      placeShipSafely,
       receiveAttack,
+      attackCell,
       allShipsSunk,
       get missedShots() {
           return missedShots;

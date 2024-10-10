@@ -62,7 +62,7 @@ function handleShipPlacement(gridElement, playerBoard) {
     };
 
     // Handle ship placement on click
-    gridElement.addEventListener('click', (e) => {
+    gridElement.addEventListener('click', function (e) {
         if (allShipsPlaced) return;  // Prevent placing ships after all are placed
     
         const cell = e.target;
@@ -74,7 +74,7 @@ function handleShipPlacement(gridElement, playerBoard) {
         console.log(`Trying to place ${currentShip.name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
     
         // Check if the ship can be placed at the desired location
-        const placed = placeShipSafely(playerBoard.board, x, y, currentShip, isHorizontal);
+        const placed = playerBoard.placeShipSafely( x, y, currentShip, isHorizontal);
     
         if (placed) {
             console.log('Ship placed successfully');
@@ -133,42 +133,6 @@ toggleAxisButton.addEventListener('click', () => {
     rotateShip();  // Call the rotate function when the button is clicked
 });
 
-function placeShipSafely(board, x, y, ship, isHorizontal) {
-    // Check if the ship can be placed within bounds
-    if (isHorizontal) {
-        if (y + ship.length > 10 || y < 0) {
-            console.log(`Ship exceeds horizontal bounds at (${x}, ${y})`);
-            return false;
-        }
-    } else {
-        if (x + ship.length > 10 || x < 0) {
-            console.log(`Ship exceeds vertical bounds at (${x}, ${y})`);
-            return false;
-        }
-    }
-
-    // Check for overlaps
-    for (let i = 0; i < ship.length; i++) {
-        const targetX = isHorizontal ? x : x + i;
-        const targetY = isHorizontal ? y + i : y;
-
-        if (board[targetX][targetY] !== null) {
-            console.log(`Cell (${targetX}, ${targetY}) is already occupied`);
-            return false;
-        }
-    }
-
-    // Place the ship on the board
-    for (let i = 0; i < ship.length; i++) {
-        const targetX = isHorizontal ? x : x + i;
-        const targetY = isHorizontal ? y + i : y;
-
-        board[targetX][targetY] = ship;
-        console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
-    }
-
-    return true;
-}
 
 
 // Helper function to check if a ship can be placed
@@ -249,7 +213,7 @@ function placeComputerShips() {
             console.log(`Trying to place ${name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
 
             // Use the placeShip function from the Gameboard to ensure it's added to the ships array
-            placed = placeShipSafely(computerBoard.board, x, y, ship, isHorizontal);
+            placed = computerBoard.placeShipSafely( x, y, ship, isHorizontal);
 
             if (placed) {
                 console.log(`${name} placed successfully.`);
@@ -305,6 +269,7 @@ function addPlayerAttackListener() {
 
         // Handle attack logic (e.g., hit or miss) on the computer's board
         const attackResult = computerBoard.receiveAttack([x, y]);
+
 
         // Update the player's grid
         if (attackResult === 'hit') {
@@ -369,39 +334,56 @@ function computerAttack() {
         const nextTarget = potentialTargets.pop();
         const [x, y] = nextTarget;
         
-        if (playerBoard.board[x][y] === null || typeof playerBoard.board[x][y] === 'object') {
-            attackCell(x, y);
+        // Call attackCell from Gameboard.js and get the result
+        const attackResult = playerBoard.attackCell(x, y);  
+
+        if (attackResult.result === 'hit' || attackResult.result === 'miss' || attackResult.result === 'sunk') {
+            // Call handleAttackResult to update the UI
+            handleAttackResult(attackResult, x, y, 'computer');  
             attackSuccessful = true;
         }
     }
 
+    // If no adjacent targets, randomly select a cell to attack
     while (!attackSuccessful) {
-        // Randomly select coordinates to attack
         const x = Math.floor(Math.random() * 10);
         const y = Math.floor(Math.random() * 10);
 
-        if (playerBoard.board[x][y] === null || typeof playerBoard.board[x][y] === 'object') {
-            attackCell(x, y);
+        // Call attackCell from Gameboard.js and get the result
+        const attackResult = playerBoard.attackCell(x, y);  
+        console.log(attackResult);
+
+        if (attackResult.result === 'hit' || attackResult.result === 'miss' || attackResult.result === 'sunk') {
+            // Call handleAttackResult to update the UI
+            handleAttackResult(attackResult, x, y, 'computer');  
             attackSuccessful = true;
         }
     }
 
-    // After computer's turn, switch back to player
+    // After the computer's turn, switch back to the player
     setTimeout(() => {
         updateStatus("Player's turn!");
     }, 1500);
 }
 
-function attackCell(x, y) {
-    const attackResult = playerBoard.receiveAttack([x, y]);
+function handleAttackResult(attackResult, x, y, attacker = 'computer') {
+    // specific console log for whether it's the player or computer's turn
+    if (attacker === 'computer') {
+        console.log(`Handling computer attack result: ${attackResult.result} at (${x}, ${y})`);
+    } else {
+        console.log(`Handling player attack result: ${attackResult.result} at (${x}, ${y})`);
+    }
+
+
+
     const playerCell = playerGridElement.children[x * 10 + y]; // Access the corresponding grid cell
 
-    if (attackResult === 'hit') {
+    if (attackResult.result === 'hit') {
         playerCell.classList.add('hit');
         updateStatus('Computer hit your ship!');
         lastHit = [x, y];
         addAdjacentCellsToTargets(x, y);  // Add adjacent cells to potential targets
-    } else if (attackResult === 'sunk') {
+    } else if (attackResult.result === 'sunk') {
         playerCell.classList.add('hit');
         updateStatus('Computer sank your ship!');
         lastHit = null;
@@ -417,6 +399,7 @@ function attackCell(x, y) {
         endGame('computer');
     }
 }
+
 
 // Helper function to add adjacent cells to potential targets
 function addAdjacentCellsToTargets(x, y) {
