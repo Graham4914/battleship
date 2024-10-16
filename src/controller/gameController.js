@@ -241,6 +241,7 @@ const toggleButton = document.getElementById('toggle-axis-btn');
 // Start the battle phase after all ships are placed
 function startBattlePhase() {
     toggleButton.style.display = 'none';
+    computerGridElement.style.visibility = 'visible'; 
     // Add classes to trigger transition effects
     const gridContainer = document.querySelector('.grid-container');
     gridContainer.classList.add('slide-left');
@@ -254,6 +255,8 @@ function startBattlePhase() {
     updateStatus('Attack the enemy ships!');
     addPlayerAttackListener();
 }
+
+
 // Handle player attacks on the computer's grid
 function addPlayerAttackListener() {
     computerGridElement.addEventListener('click', (e) => {
@@ -267,48 +270,51 @@ function addPlayerAttackListener() {
             return;  // Already attacked
         }
 
-        // Handle attack logic (e.g., hit or miss) on the computer's board
+        // Handle the attack on the computer board and get the result
         const attackResult = computerBoard.receiveAttack([x, y]);
 
+        // Now process the result using a refined handleAttackResult for player attacks
+        handleAttackResult(attackResult, x, y, 'player'); // Call with 'player' context
 
-        // Update the player's grid
-        if (attackResult === 'hit') {
-            cell.classList.add('hit');
-            updateStatus('Player hit a ship!');
-        } else if (attackResult === 'sunk') {
-            cell.classList.add('hit');
-            updateStatus('Player sank a ship!');
-        } else {
-            cell.classList.add('miss');
-            updateStatus('Player missed.');
-        }
-        // Check if the player has won
+        // Check if the player has won after the attack
         if (computerBoard.allShipsSunk()) {
             updateStatus('You win! All enemy ships are sunk!');
             endGame('player');
         } else {
-            // After player's turn, trigger computer's turn with a delay
+            // After the player's turn, switch to computer's turn with a short delay
             setTimeout(() => {
-                updateStatus('Computer\'s turn...');
-                computerAttack();
+                updateStatus("Computer's turn...");
+                computerAttack(); // Let the computer take its turn
             }, 1500);  // Delay before the computer's turn
         }
     });
 }
+
+
 function endGame(winner) {
-    // Display a message
     if (winner === 'player') {
         updateStatus('Congratulations! You win! All enemy ships are sunk.');
     } else if (winner === 'computer') {
         updateStatus('Game Over. The computer has sunk all your ships!');
     }
 
-    // Optionally, disable further interactions or reset the game
-    computerGridElement.removeEventListener('click', addPlayerAttackListener);
-    // Add any other logic to reset or restart the game as needed
+    // Show the restart button
+    const restartButton = document.getElementById('restart-btn');
+    restartButton.style.display = 'block';  // Make the button visible
 }
 
+// Ensure that the restart button only has a single event listener attached
+const restartButton = document.getElementById('restart-btn');
+restartButton.addEventListener('click', () => {
+    restartButton.style.display = 'none';  // Hide the button again
+    startGame();  // Simply restart the game by calling startGame
+});
 
+
+
+function disablePlayerActions() {
+    computerGridElement.style.pointerEvents = 'none';  // Disable clicking on the grid
+}
 
 // In your gameController.js or similar entry point
 const startScreen = document.getElementById('start-screen');
@@ -334,9 +340,10 @@ function computerAttack() {
         const nextTarget = potentialTargets.pop();
         const [x, y] = nextTarget;
         
-        // Call attackCell from Gameboard.js and get the result
-        const attackResult = playerBoard.attackCell(x, y);  
+        // Call receiveAttack from Gameboard.js and get the result
+        const attackResult = playerBoard.receiveAttack([x, y]);  // Pass coordinates as an array
 
+        // Check if the attack result is valid (hit, miss, or sunk) and handle it
         if (attackResult.result === 'hit' || attackResult.result === 'miss' || attackResult.result === 'sunk') {
             // Call handleAttackResult to update the UI
             handleAttackResult(attackResult, x, y, 'computer');  
@@ -349,15 +356,17 @@ function computerAttack() {
         const x = Math.floor(Math.random() * 10);
         const y = Math.floor(Math.random() * 10);
 
-        // Call attackCell from Gameboard.js and get the result
-        const attackResult = playerBoard.attackCell(x, y);  
+        // Call receiveAttack from Gameboard.js and get the result
+        const attackResult = playerBoard.receiveAttack([x, y]);  // Pass coordinates as an array
         console.log(attackResult);
 
+        // Check if the attack result is valid and handle it, while also skipping already attacked cells
         if (attackResult.result === 'hit' || attackResult.result === 'miss' || attackResult.result === 'sunk') {
             // Call handleAttackResult to update the UI
             handleAttackResult(attackResult, x, y, 'computer');  
             attackSuccessful = true;
         }
+        // Skip if the result is 'already_attacked' and try again in the next loop iteration
     }
 
     // After the computer's turn, switch back to the player
@@ -366,36 +375,34 @@ function computerAttack() {
     }, 1500);
 }
 
+
 function handleAttackResult(attackResult, x, y, attacker = 'computer') {
-    // specific console log for whether it's the player or computer's turn
     if (attacker === 'computer') {
-        console.log(`Handling computer attack result: ${attackResult.result} at (${x}, ${y})`);
+        console.log(`Computer attack result: ${attackResult.result} at (${x}, ${y})`);
     } else {
-        console.log(`Handling player attack result: ${attackResult.result} at (${x}, ${y})`);
+        console.log(`Player attack result: ${attackResult.result} at (${x}, ${y})`);
     }
 
+    const gridElement = (attacker === 'computer') ? playerGridElement : computerGridElement;
+    const cell = gridElement.children[x * 10 + y]; // Target the correct grid (player or computer)
 
-
-    const playerCell = playerGridElement.children[x * 10 + y]; // Access the corresponding grid cell
-
+    // Process the result of the attack (hit/miss/sunk)
     if (attackResult.result === 'hit') {
-        playerCell.classList.add('hit');
-        updateStatus('Computer hit your ship!');
-        lastHit = [x, y];
-        addAdjacentCellsToTargets(x, y);  // Add adjacent cells to potential targets
+        cell.classList.add('hit');
+        updateStatus(`${attacker === 'computer' ? 'Computer' : 'Player'} hit a ship!`);
     } else if (attackResult.result === 'sunk') {
-        playerCell.classList.add('hit');
-        updateStatus('Computer sank your ship!');
-        lastHit = null;
-        potentialTargets = [];  // Clear potential targets since the ship is sunk
+        cell.classList.add('hit');
+        updateStatus(`${attacker === 'computer' ? 'Computer' : 'Player'} sank a ship!`);
+    } else if (attackResult.result === 'miss') {
+        cell.classList.add('miss');
+        updateStatus(`${attacker === 'computer' ? 'Computer' : 'Player'} missed.`);
     } else {
-        playerCell.classList.add('miss');
-        updateStatus('Computer missed.');
+        console.error('Invalid attack result');
     }
 
-    // Check if all player's ships are sunk
-    if (playerBoard.allShipsSunk()) {
-        updateStatus('Computer wins! All your ships are sunk!');
+    // If it's the computer's attack, check if the player lost all ships
+    if (attacker === 'computer' && playerBoard.allShipsSunk()) {
+        updateStatus('Computer wins! All your ships are sunk.');
         endGame('computer');
     }
 }
@@ -419,10 +426,41 @@ function addAdjacentCellsToTargets(x, y) {
 
 
 
-// Start the ship placement phase
+
+
+
+
+
 function startGame() {
+    // Reset the game state
+    playerBoard.reset();  // Clear the player's board and state
+    computerBoard.reset();  // Clear the computer's board and state
+
+    // Clear the grids visually
+    GridView.clearGrid(playerGridElement);
+    GridView.clearGrid(computerGridElement);
+
+    // Reset grid container to remove battle phase transitions
+    const gridContainer = document.querySelector('.grid-container');
+    gridContainer.classList.remove('slide-left', 'show-battle');  // Remove transition classes
+    
+
+    // Hide the computer grid and show only the player grid initially
+    // computerGridElement.style.visibility = 'hidden';  // Hide the computer grid
+    playerGridElement.style.visibility = 'visible';  // Show the player grid
+
+    // Reset the status message and the ship index
+    currentShipIndex = 0;
+    allShipsPlaced = false;
+    updateStatus('Place your ships to begin the game.');
+
+      // Show the ship placement toggle button again
+      toggleAxisButton.style.display = 'block';
+
+    // Start the ship placement process again
     handleShipPlacement(playerGridElement, playerBoard);
 }
+
 
 // Export startGame for the entry point
 export default { startGame };

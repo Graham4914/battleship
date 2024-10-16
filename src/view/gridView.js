@@ -29,5 +29,13 @@ export const GridView = {
         } else if (result === 'miss') {
             cell.classList.add('miss');  // Add class for miss styling
         }
+    },
+
+    // Clear the grid by removing all relevant classes
+    clearGrid(gridElement) {
+        Array.from(gridElement.children).forEach(cell => {
+            cell.classList.remove('hit', 'miss', 'placed-ship');  // Remove the classes for reset
+            cell.textContent = '';  // Optional: clear any text in the cells
+        });
     }
 };

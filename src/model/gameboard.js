@@ -2,9 +2,10 @@ import { Ship } from './ship.js';
 
 export function Gameboard() {
   // Ensure the board is a 10x10 grid of null values
-  const board = Array(10).fill(null).map(() => Array(10).fill(null)); // Creates a 2D array of nulls
-  const missedShots = [];
-  const ships = [];
+  let board = Array(10).fill(null).map(() => Array(10).fill(null)); // Creates a 2D array of nulls
+  let missedShots = [];
+  let ships = [];
+  let attackedCells = new Set();  // A set to track all attacked coordinates
 
   function placeShipSafely( x, y, ship, isHorizontal) {
     // Check if the ship can be placed within bounds
@@ -85,28 +86,31 @@ function placeShip(ship, x, y, direction = 'horizontal') {
 }
 
 function receiveAttack([x, y]) {
-    const target = board[x][y];
-
-    if (target === null) {
-        console.log('Miss');
-        missedShots.push([x, y]);
-        return 'miss';
-    } else if (typeof target === 'object' && typeof target.hit === 'function') {
-        target.hit();  // Call the hit method on the ship
-        console.log('Hit');
-        
-        // Check if the ship is sunk after the hit
-        if (target.isSunk()) {
-            console.log('Ship has been sunk!');
-            return 'sunk';  // Return a specific "sunk" status
-        }
-        return 'hit';
-    } else {
-        console.error('Invalid hit detection');
-        return 'error';
+    const key = `${x},${y}`;
+    // Check if the cell has already been attacked
+    if (attackedCells.has(key)) {
+      console.log(`Cell (${x}, ${y}) was already attacked.`);
+      return { result: 'already_attacked', coordinates: [x, y] };
     }
-}
 
+    attackedCells.add(key);  // Mark the cell as attacked
+
+    const target = board[x][y];
+    if (target === null) {
+      missedShots.push([x, y]);
+      return { result: 'miss', coordinates: [x, y] };
+    } else if (typeof target === 'object' && typeof target.hit === 'function') {
+      target.hit();
+      if (target.isSunk()) {
+        return { result: 'sunk', coordinates: [x, y] };
+      }
+      return { result: 'hit', coordinates: [x, y] };
+    }
+    return { result: 'error' };
+  }
+
+
+  
 function attackCell(x, y) {
     const target = board[x][y];  // Access the targeted cell on the board
 
@@ -141,6 +145,13 @@ function allShipsSunk() {
     return allSunk;
 }
 
+function reset() {
+    board = Array(10).fill(null).map(() => Array(10).fill(null));  // Reset the board to empty state
+    missedShots = [];  // Clear all missed shots
+    ships = [];  // Remove all placed ships
+    attackedCells.clear();  // Clear all recorded attacks
+}
+
 
   return {
       placeShip,
@@ -148,11 +159,15 @@ function allShipsSunk() {
       receiveAttack,
       attackCell,
       allShipsSunk,
+      reset,
       get missedShots() {
           return missedShots;
       },
       get board() {
           return board;
+      },
+      get attackedCells(){
+        return attackedCells;
       },
       get ships() {
         return ships;
