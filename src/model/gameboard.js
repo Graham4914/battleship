@@ -1,5 +1,7 @@
 import { Ship } from './ship.js';
 
+export const attackedCells = new Set(); 
+
 export function Gameboard() {
   // Ensure the board is a 10x10 grid of null values
   let board = Array(10).fill(null).map(() => Array(10).fill(null)); // Creates a 2D array of nulls
@@ -87,27 +89,46 @@ function placeShip(ship, x, y, direction = 'horizontal') {
 
 function receiveAttack([x, y]) {
     const key = `${x},${y}`;
+    
     // Check if the cell has already been attacked
     if (attackedCells.has(key)) {
-      console.log(`Cell (${x}, ${y}) was already attacked.`);
-      return { result: 'already_attacked', coordinates: [x, y] };
+        console.log(`Cell (${x}, ${y}) was already attacked.`);
+        return { result: 'already_attacked', coordinates: [x, y] };
     }
 
-    attackedCells.add(key);  // Mark the cell as attacked
+    // Mark the cell as attacked
+    attackedCells.add(key);
 
     const target = board[x][y];
+
+    // Check if it's a miss
     if (target === null) {
-      missedShots.push([x, y]);
-      return { result: 'miss', coordinates: [x, y] };
-    } else if (typeof target === 'object' && typeof target.hit === 'function') {
-      target.hit();
-      if (target.isSunk()) {
-        return { result: 'sunk', coordinates: [x, y] };
-      }
-      return { result: 'hit', coordinates: [x, y] };
+        missedShots.push([x, y]);
+        console.log(`Missed at (${x}, ${y})`);
+        return { result: 'miss', coordinates: [x, y] };
     }
-    return { result: 'error' };
-  }
+    
+    // Check if it's a hit on a ship
+    else if (typeof target === 'object' && typeof target.hit === 'function') {
+        target.hit();  // Register the hit on the ship
+        if (target.isSunk()) {
+            console.log(`Sunk a ship at (${x}, ${y})`);
+            return { result: 'sunk', coordinates: [x, y] };
+        }
+        console.log(`Hit at (${x}, ${y})`);
+        return { result: 'hit', coordinates: [x, y] };
+    }
+    
+    // If there's an unexpected condition
+    console.error(`Error: Invalid target at (${x}, ${y})`);
+    return { result: 'error', coordinates: [x, y] };
+}
+
+function alreadyAttacked(x, y) {
+    return attackedCells.has(`${x},${y}`);
+}
+
+
 
 
   
@@ -159,6 +180,7 @@ function reset() {
       receiveAttack,
       attackCell,
       allShipsSunk,
+      alreadyAttacked,
       reset,
       get missedShots() {
           return missedShots;

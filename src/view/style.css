@@ -170,3 +170,10 @@ header h1 {
         margin-bottom: 20px;
     }
 }
+
+.status-message {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;  /* Ensure text is visible */
+}
