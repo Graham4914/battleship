@@ -1,5 +1,6 @@
 export function Ship(length) {
     let hits = 0;
+    let positions = [];
   
     function hit() {
       hits += 1;
@@ -13,6 +14,7 @@ export function Ship(length) {
       length,
       hit,
       isSunk,
+      positions,
       get hits() {
         return hits;
       },

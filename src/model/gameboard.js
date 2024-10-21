@@ -1,5 +1,5 @@
 import { Ship } from './ship.js';
-
+import { GridView } from '../view/gridView.js';
 export const attackedCells = new Set(); 
 
 export function Gameboard() {
@@ -46,46 +46,96 @@ export function Gameboard() {
     return true;
 }
 
-
-function placeShip(ship, x, y, direction = 'horizontal') {
-    console.log(`Placing ship with length ${ship.length} at (${x}, ${y})`);
-    const { length } = ship;
-
-    // Check if the ship can be placed without going out of bounds
-    if (direction === 'horizontal') {
-        if (y + length > 10 || y < 0) {
-            throw new Error('Invalid starting position for ship placement');
-        }
+function canPlaceShip(x, y, length, isHorizontal) {
+    // Checks if the ship can be placed without collisions or going out of bounds
+    if (isHorizontal) {
+        if (y + length > 10) return false;
         for (let i = 0; i < length; i++) {
-            if (board[x][y + i] !== null) {
-                throw new Error('Position is already occupied');
-            }
+            if (board[x][y + i] !== null) return false;
         }
-        // Place the ship on the board
+    } else {
+        if (x + length > 10) return false;
         for (let i = 0; i < length; i++) {
-            board[x][y + i] = ship;
-        }
-    } else if (direction === 'vertical') {
-        if (x + length > 10 || x < 0) {
-            throw new Error('Invalid starting position for ship placement');
-        }
-        for (let i = 0; i < length; i++) {
-            if (board[x + i][y] !== null) {
-                throw new Error('Position is already occupied');
-            }
-        }
-        // Place the ship on the board
-        for (let i = 0; i < length; i++) {
-            board[x + i][y] = ship;
+            if (board[x + i][y] !== null) return false;
         }
     }
-
-    // Add the placed ship to the ships array
-    ships.push(ship);  
-    console.log('Ship placed:', ship);
-    console.log('Current ships array:', ships);// <-- This line is crucial
-    return true;  // Return true if ship placement succeeds
+    return true;
 }
+
+function placeShip(ship, x, y, isHorizontal) {
+    if (!canPlaceShip(x, y, ship.length, isHorizontal)) {
+        return false;  // Placement failed
+    }
+
+    ship.positions = [];  // Initialize or clear the positions array
+
+    for (let i = 0; i < ship.length; i++) {
+        const targetX = isHorizontal ? x : x + i;
+        const targetY = isHorizontal ? y + i : y;
+        board[targetX][targetY] = ship;
+
+        // Add the position to the ship's positions array
+        ship.positions.push({ x: targetX, y: targetY });
+    }
+
+    ships.push(ship);
+    return true;  // Placement succeeded
+}
+
+
+
+function placeShipsForComputer(computerGridElement) {
+    const shipsToPlace = [
+        new Ship(2), // Destroyer
+        new Ship(3), // Submarine
+        new Ship(3), // Cruiser
+        new Ship(4), // Battleship
+        new Ship(5)  // Carrier
+    ];
+
+    shipsToPlace.forEach((ship) => {
+        let placed = false;
+        let attempts = 0;
+
+        while (!placed && attempts < 50) {
+            const isHorizontal = Math.random() < 0.5;
+            const x = Math.floor(Math.random() * (isHorizontal ? 10 : (10 - ship.length)));
+            const y = Math.floor(Math.random() * (isHorizontal ? (10 - ship.length) : 10));
+
+            placed = placeShip(ship, x, y, isHorizontal);
+            if (placed) {
+                // Initialize the positions array to track the ship's coordinates
+                ship.positions = [];
+                for (let i = 0; i < ship.length; i++) {
+                    const targetX = isHorizontal ? x : x + i;
+                    const targetY = isHorizontal ? y + i : y;
+
+                    // Store each part of the ship's position
+                    ship.positions.push({ x: targetX, y: targetY });
+                }
+
+                // Render the ship on the computer's grid for debugging purposes
+                ship.positions.forEach(({ x, y }) => {
+                    GridView.renderShip(computerGridElement, ship, x, y, isHorizontal);
+                });
+
+                console.log(`Ship placed:`, ship);
+                console.log('Computer Board:', board);
+                console.log(`Placed ${ship.length}-length ship successfully after ${attempts} attempts at (${x}, ${y})`);
+            }
+            attempts++;
+        }
+
+        if (!placed) {
+            console.error(`Failed to place ship after ${attempts} attempts.`);
+        }
+    });
+
+    console.log("Computer's ships array:", ships);
+}
+
+
+
 
 function receiveAttack([x, y]) {
     const key = `${x},${y}`;
@@ -176,7 +226,9 @@ function reset() {
 
   return {
       placeShip,
+      canPlaceShip,
       placeShipSafely,
+      placeShipsForComputer,
       receiveAttack,
       attackCell,
       allShipsSunk,
