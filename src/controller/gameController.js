@@ -30,6 +30,7 @@ const ships = [
     { name: 'Battleship', length: 4 },
     { name: 'Carrier', length: 5 }
 ];
+console.log('Initializing ships:', ships);
 
 let isHorizontal = true;  // Default ship placement orientation
 
@@ -62,7 +63,8 @@ function handleShipPlacement(gridElement, playerBoard) {
             return;  // Prevent further action if out of bounds
         }
     
-        const currentShip = ships[currentShipIndex];  // Ensure valid current ship
+        const currentShip = Ship(ships[currentShipIndex].name, ships[currentShipIndex].length);
+
     
         // Highlight cells for the current ship length if placement is valid
         if (playerBoard.canPlaceShip(x, y, currentShip.length, isHorizontal)) {
@@ -79,19 +81,23 @@ function handleShipPlacement(gridElement, playerBoard) {
         const cellIndex = Array.from(gridElement.children).indexOf(cell);
         const x = Math.floor(cellIndex / 10);
         const y = cellIndex % 10;
-        const currentShip = new Ship(ships[currentShipIndex].length);  // Create a new Ship object for each ship placement
-    
+        const currentShip = Ship(ships[currentShipIndex].name, ships[currentShipIndex].length);
+        
+
         console.log(`Trying to place ${currentShip.name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
-    
+        console.log('Current Ship Details:', currentShip);
+
+
         // Check if the ship can be placed at the desired location
         const placed = playerBoard.placeShipSafely( x, y, currentShip, isHorizontal);
     
         if (placed) {
-            console.log('Ship placed successfully');
+            console.log('Ship placed successfully:', currentShip);
             GridView.renderShip(gridElement, currentShip, x, y, isHorizontal);
 
             playerBoard.ships.push(currentShip);
             console.log(`Player's ship array:`, playerBoard.ships); 
+            
     
             
             // Clear highlights and temporarily remove mouseover
@@ -132,6 +138,7 @@ function handleShipPlacement(gridElement, playerBoard) {
 
 // Rotate the current ship's orientation
 function rotateShip() {
+    console.log(`Rotating ship. New orientation is ${isHorizontal ? 'Horizontal' : 'Vertical'}`);
     isHorizontal = !isHorizontal;
     statusMessageElement.innerHTML = `Placing ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces). Currently ${isHorizontal ? 'Horizontal' : 'Vertical'}`;
     GridView.clearHighlights(playerGridElement); 

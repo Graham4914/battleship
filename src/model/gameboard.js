@@ -9,42 +9,36 @@ export function Gameboard() {
   let ships = [];
   let attackedCells = new Set();  // A set to track all attacked coordinates
 
-  function placeShipSafely( x, y, ship, isHorizontal) {
-    // Check if the ship can be placed within bounds
+  function placeShipSafely(x, y, ship, isHorizontal) {
+    console.log(`Checking if ship can be safely placed at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
+
+    // Check boundaries
     if (isHorizontal) {
         if (y + ship.length > 10 || y < 0) {
-            console.log(`Ship exceeds horizontal bounds at (${x}, ${y})`);
+            console.log(`Horizontal ship placement out of bounds at (${x}, ${y})`);
             return false;
         }
     } else {
         if (x + ship.length > 10 || x < 0) {
-            console.log(`Ship exceeds vertical bounds at (${x}, ${y})`);
+            console.log(`Vertical ship placement out of bounds at (${x}, ${y})`);
             return false;
         }
     }
 
-    // Check for overlaps
+    // Check for overlap
     for (let i = 0; i < ship.length; i++) {
         const targetX = isHorizontal ? x : x + i;
         const targetY = isHorizontal ? y + i : y;
 
         if (board[targetX][targetY] !== null) {
-            console.log(`Cell (${targetX}, ${targetY}) is already occupied`);
+            console.log(`Cell (${targetX}, ${targetY}) is already occupied. Cannot place ship.`);
             return false;
         }
     }
 
-    // Place the ship on the board
-    for (let i = 0; i < ship.length; i++) {
-        const targetX = isHorizontal ? x : x + i;
-        const targetY = isHorizontal ? y + i : y;
-
-        board[targetX][targetY] = ship;
-        console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
-    }
-
-    return true;
+    return true; // If all checks pass, the ship can be placed
 }
+
 
 function canPlaceShip(x, y, length, isHorizontal) {
     // Checks if the ship can be placed without collisions or going out of bounds
@@ -63,22 +57,37 @@ function canPlaceShip(x, y, length, isHorizontal) {
 }
 
 function placeShip(ship, x, y, isHorizontal) {
-    if (!canPlaceShip(x, y, ship.length, isHorizontal)) {
+    console.log(`Attempting to place ship of length ${ship.length} at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
+    
+    // Check if the ship can be placed safely first
+    if (!placeShipSafely(x, y, ship, isHorizontal)) {
         return false;  // Placement failed
     }
 
-    ship.positions = [];  // Initialize or clear the positions array
+    // Initialize the positions array to track where the ship is placed
+    ship.positions = [];  // Clear positions to ensure there are no duplicates
 
+    // Iterate through each segment of the ship to place it on the board
     for (let i = 0; i < ship.length; i++) {
-        const targetX = isHorizontal ? x : x + i;
-        const targetY = isHorizontal ? y + i : y;
+        const targetX = isHorizontal ? x : x + i;  // Correct handling for vertical placement
+        const targetY = isHorizontal ? y + i : y;  // Correct handling for horizontal placement
+
+        // Place the ship on the board
         board[targetX][targetY] = ship;
 
-        // Add the position to the ship's positions array
+        // Record the positions occupied by this ship
         ship.positions.push({ x: targetX, y: targetY });
+
+        // Log the placement
+        console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
     }
 
+    // Add this ship to the list of ships on the board
     ships.push(ship);
+    
+    // Log the successful ship placement and positions array
+    console.log(`Ship of length ${ship.length} placed successfully at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}. Positions:`, ship.positions);
+
     return true;  // Placement succeeded
 }
 
@@ -86,11 +95,11 @@ function placeShip(ship, x, y, isHorizontal) {
 
 function placeShipsForComputer(computerGridElement) {
     const shipsToPlace = [
-        new Ship(2), // Destroyer
-        new Ship(3), // Submarine
-        new Ship(3), // Cruiser
-        new Ship(4), // Battleship
-        new Ship(5)  // Carrier
+        Ship('Destroyer', 2),
+        Ship('Submarine', 3),
+        Ship('Cruiser', 3),
+        Ship('Battleship', 4),
+        Ship('Carrier', 5)
     ];
 
     shipsToPlace.forEach((ship) => {
@@ -104,24 +113,15 @@ function placeShipsForComputer(computerGridElement) {
 
             placed = placeShip(ship, x, y, isHorizontal);
             if (placed) {
-                // Initialize the positions array to track the ship's coordinates
-                ship.positions = [];
+                ship.positions = [];  // Initialize the positions array
+
                 for (let i = 0; i < ship.length; i++) {
                     const targetX = isHorizontal ? x : x + i;
                     const targetY = isHorizontal ? y + i : y;
-
-                    // Store each part of the ship's position
                     ship.positions.push({ x: targetX, y: targetY });
                 }
 
-                // Render the ship on the computer's grid for debugging purposes
-                ship.positions.forEach(({ x, y }) => {
-                    GridView.renderShip(computerGridElement, ship, x, y, isHorizontal);
-                });
-
                 console.log(`Ship placed:`, ship);
-                console.log('Computer Board:', board);
-                console.log(`Placed ${ship.length}-length ship successfully after ${attempts} attempts at (${x}, ${y})`);
             }
             attempts++;
         }
@@ -133,7 +133,6 @@ function placeShipsForComputer(computerGridElement) {
 
     console.log("Computer's ships array:", ships);
 }
-
 
 
 

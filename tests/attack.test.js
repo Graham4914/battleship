@@ -9,7 +9,7 @@ describe('Attack Logic', () => {
         // Set up a fresh gameboard and ship before each test
         gameboard = Gameboard();
         ship = Ship(3); // Ship of length 3
-        gameboard.placeShip(ship, 0, 0, 'horizontal');
+        gameboard.placeShip(ship, 0, 0, true);
     });
 
     test('registers a hit correctly', () => {
@@ -34,7 +34,7 @@ describe('Attack Logic', () => {
     test('continues after sinking a ship', () => {
         // Place another ship to ensure not all ships are sunk
         const secondShip = Ship(2);
-        gameboard.placeShip(secondShip, 5, 5, 'horizontal');
+        gameboard.placeShip(secondShip, 5, 5, true);
     
         // Sink the first ship by attacking all parts of it
         gameboard.receiveAttack([0, 0]);
@@ -48,7 +48,7 @@ describe('Attack Logic', () => {
     test('correctly handles all ships being sunk', () => {
         // Place a second ship
         const secondShip = Ship(2);
-        gameboard.placeShip(secondShip, 2, 0, 'horizontal');
+        gameboard.placeShip(secondShip, 2, 0, true);
         
         // Sink both ships
         gameboard.receiveAttack([0, 0]);
