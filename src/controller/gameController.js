@@ -67,7 +67,7 @@ function handleShipPlacement(gridElement, playerBoard) {
 
     
         // Highlight cells for the current ship length if placement is valid
-        if (playerBoard.canPlaceShip(x, y, currentShip.length, isHorizontal)) {
+        if (playerBoard.placeShipSafely(x, y, currentShip.length, isHorizontal)) {
             GridView.highlightCells(gridElement, x, y, currentShip.length, isHorizontal);
         }
     };
@@ -83,24 +83,20 @@ function handleShipPlacement(gridElement, playerBoard) {
         const y = cellIndex % 10;
         const currentShip = Ship(ships[currentShipIndex].name, ships[currentShipIndex].length);
         
-
-        console.log(`Trying to place ${currentShip.name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
-        console.log('Current Ship Details:', currentShip);
-
-
+        console.log(`Attempting to place ship: ${currentShip.name} (Length: ${currentShip.length}) at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
+        
         // Check if the ship can be placed at the desired location
-        const placed = playerBoard.placeShipSafely( x, y, currentShip, isHorizontal);
+        const placed = playerBoard.placeShipSafely(x, y, currentShip, isHorizontal);
     
         if (placed) {
             console.log('Ship placed successfully:', currentShip);
+            console.log('Ship positions before render:', currentShip.positions);
             GridView.renderShip(gridElement, currentShip, x, y, isHorizontal);
-
-            playerBoard.ships.push(currentShip);
-            console.log(`Player's ship array:`, playerBoard.ships); 
-            
     
-            
-            // Clear highlights and temporarily remove mouseover
+            playerBoard.ships.push(currentShip);
+            console.log(`Player's ship array after placement:`, playerBoard.ships); 
+    
+            // Clear highlights
             GridView.clearHighlights(gridElement);
             gridElement.removeEventListener('mouseover', mouseoverHandler);
     
@@ -122,6 +118,7 @@ function handleShipPlacement(gridElement, playerBoard) {
             console.log('Failed to place ship due to overlap or invalid position');
         }
     });
+    
     
         // Initialize hover handler
         gridElement.addEventListener('mouseover', mouseoverHandler);

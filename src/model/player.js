@@ -20,6 +20,27 @@ export function Player(isComputer = false) {
       });
   }
 
+//   function randomAttack(gameboard) {
+//     let x, y, coords;
+//     do {
+//         x = Math.floor(Math.random() * 10);
+//         y = Math.floor(Math.random() * 10);
+//         coords = [x, y];
+//     } while (previousMoves.has(coords.toString())); // Ensure new move
+//     previousMoves.add(coords.toString());
+
+//     // Execute the attack on the gameboard
+//     const attackResult = gameboard.receiveAttack(coords);
+
+//     // If the attack is a miss, record it as a missed shot (optional check, as gameboard should handle this too)
+//     if (attackResult.result === 'miss') {
+//         console.log(`Missed at (${x}, ${y})`);
+//         gameboard.missedShots.push(coords);
+//     }
+
+//     return coords;
+// }
+
   function randomAttack(gameboard) {
       let x, y, coords;
       do {

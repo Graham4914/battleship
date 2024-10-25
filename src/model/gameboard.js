@@ -10,61 +10,49 @@ export function Gameboard() {
   let attackedCells = new Set();  // A set to track all attacked coordinates
 
   function placeShipSafely(x, y, ship, isHorizontal) {
-    console.log(`Checking if ship can be safely placed at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
+    const length = ship.length;  // Extract length from the Ship object
 
-    // Check boundaries
-    if (isHorizontal) {
-        if (y + ship.length > 10 || y < 0) {
-            console.log(`Horizontal ship placement out of bounds at (${x}, ${y})`);
-            return false;
-        }
-    } else {
-        if (x + ship.length > 10 || x < 0) {
-            console.log(`Vertical ship placement out of bounds at (${x}, ${y})`);
-            return false;
-        }
-    }
-
-    // Check for overlap
-    for (let i = 0; i < ship.length; i++) {
+    console.log(`Checking if ship ${ship.name} can be safely placed at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
+    
+    for (let i = 0; i < length; i++) {
         const targetX = isHorizontal ? x : x + i;
         const targetY = isHorizontal ? y + i : y;
 
-        if (board[targetX][targetY] !== null) {
-            console.log(`Cell (${targetX}, ${targetY}) is already occupied. Cannot place ship.`);
+        if (targetX < 0 || targetX >= 10 || targetY < 0 || targetY >= 10) {
+            console.log(`Out of bounds at (${targetX}, ${targetY})`);
+            return false;
+        }
+        if (board[targetX][targetY]) {
+            console.log(`Cell at (${targetX}, ${targetY}) is already occupied. Cannot place ship.`);
             return false;
         }
     }
 
-    return true; // If all checks pass, the ship can be placed
-}
-
-
-function canPlaceShip(x, y, length, isHorizontal) {
-    // Checks if the ship can be placed without collisions or going out of bounds
-    if (isHorizontal) {
-        if (y + length > 10) return false;
-        for (let i = 0; i < length; i++) {
-            if (board[x][y + i] !== null) return false;
-        }
-    } else {
-        if (x + length > 10) return false;
-        for (let i = 0; i < length; i++) {
-            if (board[x + i][y] !== null) return false;
-        }
+    // Assign positions if placement is valid
+    for (let i = 0; i < length; i++) {
+        const targetX = isHorizontal ? x : x + i;
+        const targetY = isHorizontal ? y + i : y;
+        board[targetX][targetY] = ship;
+        ship.positions.push({ x: targetX, y: targetY });
+        console.log(`Marking cell (${targetX}, ${targetY}) for ship ${ship.name}`);
     }
+
+    console.log(`Ship ${ship.name} placed successfully with positions:`, ship.positions);
     return true;
 }
 
+
+
 function placeShip(ship, x, y, isHorizontal) {
-    console.log(`Attempting to place ship of length ${ship.length} at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
+    console.log(`Attempting to place ship ${ship.name} of length ${ship.length} at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
     
     // Check if the ship can be placed safely first
     if (!placeShipSafely(x, y, ship, isHorizontal)) {
+        console.error(`Failed to place ship safely at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
         return false;  // Placement failed
     }
 
-    // Initialize the positions array to track where the ship is placed
+    // Ensure positions array is initialized and empty before adding new positions
     ship.positions = [];  // Clear positions to ensure there are no duplicates
 
     // Iterate through each segment of the ship to place it on the board
@@ -72,25 +60,25 @@ function placeShip(ship, x, y, isHorizontal) {
         const targetX = isHorizontal ? x : x + i;  // Correct handling for vertical placement
         const targetY = isHorizontal ? y + i : y;  // Correct handling for horizontal placement
 
-        // Place the ship on the board
-        board[targetX][targetY] = ship;
-
-        // Record the positions occupied by this ship
-        ship.positions.push({ x: targetX, y: targetY });
-
-        // Log the placement
-        console.log(`Marking cell (${targetX}, ${targetY}) as occupied`);
+        // Place the ship on the board and ensure we're within the bounds of the board
+        if (targetX >= 0 && targetX < 10 && targetY >= 0 && targetY < 10) {
+            board[targetX][targetY] = ship;
+            ship.positions.push({ x: targetX, y: targetY });
+            console.log(`Marking cell (${targetX}, ${targetY}) as occupied for ship ${ship.name}`);
+        } else {
+            console.error(`Error: Attempted to place ship out of bounds at (${targetX}, ${targetY})`);
+            return false;  // If an out-of-bounds placement occurs, we should stop placement
+        }
     }
 
     // Add this ship to the list of ships on the board
     ships.push(ship);
     
     // Log the successful ship placement and positions array
-    console.log(`Ship of length ${ship.length} placed successfully at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}. Positions:`, ship.positions);
+    console.log(`Ship ${ship.name} of length ${ship.length} placed successfully at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}. Positions:`, ship.positions);
 
     return true;  // Placement succeeded
 }
-
 
 
 function placeShipsForComputer(computerGridElement) {
@@ -111,23 +99,18 @@ function placeShipsForComputer(computerGridElement) {
             const x = Math.floor(Math.random() * (isHorizontal ? 10 : (10 - ship.length)));
             const y = Math.floor(Math.random() * (isHorizontal ? (10 - ship.length) : 10));
 
+            console.log(`Attempting to place ship: ${ship.name} at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
             placed = placeShip(ship, x, y, isHorizontal);
-            if (placed) {
-                ship.positions = [];  // Initialize the positions array
-
-                for (let i = 0; i < ship.length; i++) {
-                    const targetX = isHorizontal ? x : x + i;
-                    const targetY = isHorizontal ? y + i : y;
-                    ship.positions.push({ x: targetX, y: targetY });
-                }
-
-                console.log(`Ship placed:`, ship);
+            if (!placed) {
+                console.warn(`Failed attempt to place ${ship.name} at (${x}, ${y}). Attempt: ${attempts + 1}`);
             }
             attempts++;
         }
 
         if (!placed) {
-            console.error(`Failed to place ship after ${attempts} attempts.`);
+            console.error(`Failed to place ship (${ship.name}) after ${attempts} attempts.`);
+        } else {
+            console.log(`Ship placed:`, ship);
         }
     });
 
@@ -225,7 +208,7 @@ function reset() {
 
   return {
       placeShip,
-      canPlaceShip,
+    //   canPlaceShip,
       placeShipSafely,
       placeShipsForComputer,
       receiveAttack,

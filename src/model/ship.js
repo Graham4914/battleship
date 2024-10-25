@@ -1,4 +1,4 @@
-export function Ship(name,length) {
+export function Ship(name, length) {
   console.log(`Creating ship: ${name}, Length: ${length}`);
     let hits = 0;
     let positions = [];

@@ -13,11 +13,19 @@ describe('Gameboard Factory', () => {
 
     test('places a ship vertically', () => {
         const gameboard = Gameboard();
-        const ship = Ship('Submarine', 2); // Ship with name 'Submarine' and length 2
-        gameboard.placeShip(ship, 0, 0, 'vertical');
-        expect(gameboard.board[0][0]).toBe(ship);
-        expect(gameboard.board[1][0]).toBe(ship);  // Ensure second part of ship is placed correctly
+        const ship = Ship('Submarine', 3);
+    
+        // Attempt to place the ship vertically starting at (0, 0)
+        const placed = gameboard.placeShipSafely(0, 0, ship, false);
+        expect(placed).toBe(true); // Ensure the function indicates successful placement
+    
+        // Check that the ship is correctly referenced in the gameboard
+        for (let i = 0; i < ship.length; i++) {
+            console.log(`Expected cell (0, ${i}) to contain part of ship ${ship.name}`);
+            expect(gameboard.board[0 + i][0]).toEqual(ship); // Adjust this if you’re storing something else (e.g., an ID)
+        }
     });
+    
     
 
     test('records a hit on the ship', () => {
