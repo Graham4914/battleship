@@ -1,6 +1,8 @@
 import { Ship } from './ship.js';
 import { GridView } from '../view/gridView.js';
 export const attackedCells = new Set(); 
+import { computerGridElement, playerGridElement } from '../controller/gameController.js';
+
 
 export function Gameboard() {
   // Ensure the board is a 10x10 grid of null values
@@ -8,12 +10,11 @@ export function Gameboard() {
   let missedShots = [];
   let ships = [];
   let attackedCells = new Set();  // A set to track all attacked coordinates
+  let shipCells = new Set();
 
   function placeShipSafely(x, y, ship, isHorizontal) {
-    const length = ship.length;  // Extract length from the Ship object
-
+    const length = ship.length;
     console.log(`Checking if ship ${ship.name} can be safely placed at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
-    
     for (let i = 0; i < length; i++) {
         const targetX = isHorizontal ? x : x + i;
         const targetY = isHorizontal ? y + i : y;
@@ -27,19 +28,17 @@ export function Gameboard() {
             return false;
         }
     }
-
-    // Assign positions if placement is valid
     for (let i = 0; i < length; i++) {
         const targetX = isHorizontal ? x : x + i;
         const targetY = isHorizontal ? y + i : y;
         board[targetX][targetY] = ship;
         ship.positions.push({ x: targetX, y: targetY });
-        console.log(`Marking cell (${targetX}, ${targetY}) for ship ${ship.name}`);
+        shipCells.add(`${targetX},${targetY}`);  // Track ship positions in shipCells set
+        console.log(`Marking cell (${targetX}, ${targetY}) for ship ${ship.name}. Current shipCells:`, shipCells);
     }
-
     console.log(`Ship ${ship.name} placed successfully with positions:`, ship.positions);
     return true;
-}
+  }
 
 
 
@@ -81,7 +80,15 @@ function placeShip(ship, x, y, isHorizontal) {
 }
 
 
-function placeShipsForComputer(computerGridElement) {
+function resetShipClasses(container) {
+    const placedShips = container.querySelectorAll('.placed-ship');
+    placedShips.forEach(cell => {
+        cell.classList.remove('placed-ship');
+    });
+}
+
+
+function placeShipsForComputer() {
     const shipsToPlace = [
         Ship('Destroyer', 2),
         Ship('Submarine', 3),
@@ -90,17 +97,30 @@ function placeShipsForComputer(computerGridElement) {
         Ship('Carrier', 5)
     ];
 
+    console.log('Starting ship placement for computer. Ships to place:', shipsToPlace);
+
     shipsToPlace.forEach((ship) => {
         let placed = false;
         let attempts = 0;
+
+             // Log ship that is attempting to be placed
+             console.log(`Attempting to place ship: ${ship.name}`);
 
         while (!placed && attempts < 50) {
             const isHorizontal = Math.random() < 0.5;
             const x = Math.floor(Math.random() * (isHorizontal ? 10 : (10 - ship.length)));
             const y = Math.floor(Math.random() * (isHorizontal ? (10 - ship.length) : 10));
 
-            console.log(`Attempting to place ship: ${ship.name} at (${x}, ${y}) ${isHorizontal ? 'horizontally' : 'vertically'}`);
+
+              // Log the coordinates and orientation being tried
+              console.log(`Trying to place ship ${ship.name} at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}. Attempt number: ${attempts + 1}`);
+
+            // Clear classes for previous attempt before retrying
+            resetShipClasses(computerGridElement);
+
             placed = placeShip(ship, x, y, isHorizontal);
+            console.log(`Ship placement for ${ship.name} at (${x}, ${y}) ${placed ? 'succeeded' : 'failed'}`);
+
             if (!placed) {
                 console.warn(`Failed attempt to place ${ship.name} at (${x}, ${y}). Attempt: ${attempts + 1}`);
             }
@@ -110,39 +130,38 @@ function placeShipsForComputer(computerGridElement) {
         if (!placed) {
             console.error(`Failed to place ship (${ship.name}) after ${attempts} attempts.`);
         } else {
-            console.log(`Ship placed:`, ship);
+            console.log(`Successfully placed ${ship.name} with positions:`, ship.positions);
+            console.log('Current shipCells after placement:', shipCells);
         }
     });
 
-    console.log("Computer's ships array:", ships);
+    console.log('Finished placing ships for computer. Final shipCells:', shipCells);
 }
 
 
 
 function receiveAttack([x, y]) {
+    // Ensure x and y are within valid bounds
+    if (x < 0 || x >= 10 || y < 0 || y >= 10) {
+        console.error(`Invalid attack coordinates: (${x}, ${y})`);
+        return { result: 'error', coordinates: [x, y] };
+    }
+
     const key = `${x},${y}`;
-    
-    // Check if the cell has already been attacked
     if (attackedCells.has(key)) {
         console.log(`Cell (${x}, ${y}) was already attacked.`);
         return { result: 'already_attacked', coordinates: [x, y] };
     }
 
-    // Mark the cell as attacked
     attackedCells.add(key);
-
     const target = board[x][y];
 
-    // Check if it's a miss
     if (target === null) {
         missedShots.push([x, y]);
         console.log(`Missed at (${x}, ${y})`);
         return { result: 'miss', coordinates: [x, y] };
-    }
-    
-    // Check if it's a hit on a ship
-    else if (typeof target === 'object' && typeof target.hit === 'function') {
-        target.hit();  // Register the hit on the ship
+    } else if (typeof target === 'object' && typeof target.hit === 'function') {
+        target.hit();
         if (target.isSunk()) {
             console.log(`Sunk a ship at (${x}, ${y})`);
             return { result: 'sunk', coordinates: [x, y] };
@@ -150,11 +169,11 @@ function receiveAttack([x, y]) {
         console.log(`Hit at (${x}, ${y})`);
         return { result: 'hit', coordinates: [x, y] };
     }
-    
-    // If there's an unexpected condition
+
     console.error(`Error: Invalid target at (${x}, ${y})`);
     return { result: 'error', coordinates: [x, y] };
-}
+  }
+
 
 function alreadyAttacked(x, y) {
     return attackedCells.has(`${x},${y}`);
@@ -203,6 +222,7 @@ function reset() {
     missedShots = [];  // Clear all missed shots
     ships = [];  // Remove all placed ships
     attackedCells.clear();  // Clear all recorded attacks
+    shipCells.clear();  // Clear shipCells set during reset
 }
 
 
@@ -210,7 +230,7 @@ function reset() {
       placeShip,
     //   canPlaceShip,
       placeShipSafely,
-      placeShipsForComputer,
+      placeShipsForComputer: (boardInstance) => placeShipsForComputer(boardInstance),
       receiveAttack,
       attackCell,
       allShipsSunk,
@@ -227,6 +247,10 @@ function reset() {
       },
       get ships() {
         return ships;
+      },
+      get shipCells() {
+        console.log('Accessing shipCells:', shipCells instanceof Set ? 'Valid Set' : 'Not a Set', shipCells);
+        return shipCells;
       }
   };
 }

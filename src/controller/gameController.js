@@ -6,14 +6,15 @@ import { Ship } from "../model/ship.js";
 // Initialize the gameboards for player and computer
 const playerBoard = Gameboard();
 const computerBoard = Gameboard();
+console.log('Initialized computerBoard shipCells:', computerBoard.shipCells instanceof Set ? 'Valid Set' : 'Not a Set', computerBoard.shipCells);
 
 // Initialize players
 const player = Player();
 const computer = Player(true);  // Computer player
 
 // Initialize the view elements (grids and status message)
-const playerGridElement = document.getElementById('player-grid');
-const computerGridElement = document.getElementById('computer-grid');
+export const playerGridElement = document.getElementById('player-grid');
+export const computerGridElement = document.getElementById('computer-grid');
 const statusMessageElement = document.querySelector('.status-message');
 
 // Initialize grids
@@ -36,71 +37,39 @@ let isHorizontal = true;  // Default ship placement orientation
 
 // Handle ship placement logic
 function handleShipPlacement(gridElement, playerBoard) {
-    if (currentShipIndex >= ships.length) {
-        return;  // All ships are placed, prevent any further action
-    }
-
-    statusMessageElement.innerHTML = `Place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
-
-     // Mouseover for cell highlighting
-     const mouseoverHandler = (e) => {
-        if (allShipsPlaced) return;  // Prevent further highlights after all ships are placed
-    
+    const mouseoverHandler = (e) => {
+        if (allShipsPlaced) return;
         const cell = e.target;
         const cellIndex = Array.from(gridElement.children).indexOf(cell);
-    
-        // If cellIndex is -1, it means the target element isn't valid
         if (cellIndex === -1) return;
-    
-        // Clear previous highlights
         GridView.clearHighlights(gridElement);
-    
         const x = Math.floor(cellIndex / 10);
         const y = cellIndex % 10;
-    
-        // Make sure x and y are within bounds before proceeding
         if (x < 0 || x >= 10 || y < 0 || y >= 10) {
-            return;  // Prevent further action if out of bounds
+            return;
         }
-    
         const currentShip = Ship(ships[currentShipIndex].name, ships[currentShipIndex].length);
-
-    
-        // Highlight cells for the current ship length if placement is valid
         if (playerBoard.placeShipSafely(x, y, currentShip.length, isHorizontal)) {
             GridView.highlightCells(gridElement, x, y, currentShip.length, isHorizontal);
         }
     };
-    
 
-    // Handle ship placement on click
     gridElement.addEventListener('click', function (e) {
-        if (allShipsPlaced) return;  // Prevent placing ships after all are placed
-    
+        if (allShipsPlaced) return;
+        GridView.clearHighlights(gridElement);
         const cell = e.target;
         const cellIndex = Array.from(gridElement.children).indexOf(cell);
         const x = Math.floor(cellIndex / 10);
         const y = cellIndex % 10;
         const currentShip = Ship(ships[currentShipIndex].name, ships[currentShipIndex].length);
-        
         console.log(`Attempting to place ship: ${currentShip.name} (Length: ${currentShip.length}) at (${x}, ${y}) with orientation ${isHorizontal ? 'horizontal' : 'vertical'}`);
-        
-        // Check if the ship can be placed at the desired location
         const placed = playerBoard.placeShipSafely(x, y, currentShip, isHorizontal);
-    
         if (placed) {
             console.log('Ship placed successfully:', currentShip);
             console.log('Ship positions before render:', currentShip.positions);
-            GridView.renderShip(gridElement, currentShip, x, y, isHorizontal);
-    
+            const playerShipCells = playerBoard.shipCells; // Get the player ship cells
+            GridView.renderShip(gridElement, currentShip, playerShipCells, x, y, isHorizontal);
             playerBoard.ships.push(currentShip);
-            console.log(`Player's ship array after placement:`, playerBoard.ships); 
-    
-            // Clear highlights
-            GridView.clearHighlights(gridElement);
-            gridElement.removeEventListener('mouseover', mouseoverHandler);
-    
-            // Move to the next ship or start battle phase
             currentShipIndex++;
             if (currentShipIndex >= ships.length) {
                 allShipsPlaced = true;
@@ -109,8 +78,7 @@ function handleShipPlacement(gridElement, playerBoard) {
             } else {
                 statusMessageElement.textContent = `Place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
             }
-    
-            // Add mousemove event to reactivate hover behavior only when the mouse moves
+            gridElement.removeEventListener('mouseover', mouseoverHandler);
             gridElement.addEventListener('mousemove', () => {
                 gridElement.addEventListener('mouseover', mouseoverHandler);
             }, { once: true });
@@ -118,13 +86,9 @@ function handleShipPlacement(gridElement, playerBoard) {
             console.log('Failed to place ship due to overlap or invalid position');
         }
     });
-    
-    
-        // Initialize hover handler
-        gridElement.addEventListener('mouseover', mouseoverHandler);
-    
 
-    // Rotate the ship when 'r' is pressed
+    gridElement.addEventListener('mouseover', mouseoverHandler);
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'r') {
             rotateShip();
@@ -161,21 +125,33 @@ function startBattlePhase() {
 
     // Update the status message
     GridView.updateStatus('Computer is placing ships...');
+    GridView.clearHighlights(computerGridElement);
 
     // Place computer ships logically on the board
-    computerBoard.placeShipsForComputer(computerGridElement);  // This will add ships to the board model, not the UI
+    computerBoard.placeShipsForComputer();  // Use the method from the Gameboard object
 
+    console.log('Rendering computer ships, shipCells:', computerBoard.shipCells instanceof Set ? 'Valid Set' : 'Not a Set', computerBoard.shipCells);
     // Render the ships on the computer grid for testing purposes (remove later in the final game)
-    computerBoard.ships.forEach(ship => {
-        ship.positions.forEach(({ x, y }) => {
-            GridView.renderShip(computerGridElement, ship, x, y, ship.isHorizontal);
-        });
-    });
 
+ // Correct way to access shipCells using the getter from computerBoard instance
+const computerShipCells = computerBoard.shipCells; 
+console.log('Assigned computerShipCells from computerBoard:', computerShipCells instanceof Set ? 'Valid Set' : 'Not a Set', computerShipCells);
+const playerShipCells = playerBoard.shipCells; 
+// When rendering the ships, pass computerShipCells to renderShip function
+computerBoard.ships.forEach(ship => {
+    console.log('Rendering ship:', ship);
+    console.log('Ship positions:', ship.positions); // Log ship positions
+
+    ship.positions.forEach(({ x, y }) => {
+        console.log('Before calling renderShip:', computerShipCells instanceof Set ? 'Valid Set' : 'Not a Set', computerShipCells);
+        GridView.renderShip(computerGridElement, ship, computerShipCells, x, y, ship.isHorizontal);
+    });
+});
     // Update the status to notify the player it's their turn to attack
     GridView.updateStatus('Attack the enemy ships!');
     addPlayerAttackListener();
 }
+
 
 
 // Handle player attacks
