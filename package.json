@@ -9,6 +9,10 @@
     "build": "webpack --mode production",
     "test": "jest"
   },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+  },
   "keywords": [],
   "author": "graham shamran",
   "license": "ISC",
@@ -25,9 +29,11 @@
     "globals": "^15.8.0",
     "html-webpack-plugin": "^5.6.0",
     "jest": "^29.4.3",
+    "jest-environment-jsdom": "^29.7.0",
     "style-loader": "^4.0.0",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   }
+
 }

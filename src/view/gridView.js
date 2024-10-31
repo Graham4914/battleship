@@ -108,8 +108,13 @@ function updateCell(cell, result) {
 
 // Clear the grid by removing all relevant classes
 function clearGrid(gridElement) {
+    if (!gridElement) {
+        console.error('Grid element is undefined in clearGrid function.');
+        return;
+    }
+
+    // Proceed if the gridElement is defined
     Array.from(gridElement.children).forEach(cell => {
-        cell.classList.remove('hit', 'miss', 'placed-ship');  // Remove the classes for reset
-        cell.textContent = '';  // Optional: clear any text in the cells
+        cell.classList.remove('hit', 'miss', 'placed-ship');
     });
 }

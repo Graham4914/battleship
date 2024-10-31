@@ -8,8 +8,10 @@ describe('Attack Logic', () => {
     beforeEach(() => {
         // Set up a fresh gameboard and ship before each test
         gameboard = Gameboard();
-        ship = Ship(3); // Ship of length 3
+        ship = Ship('Destroyer', 3); // Ship of length 3
+        // Place the ship and set its positions using the new setPositions method
         gameboard.placeShip(ship, 0, 0, true);
+        ship.setPositions([{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }]);
     });
 
     test('registers a hit correctly', () => {
@@ -33,8 +35,9 @@ describe('Attack Logic', () => {
 
     test('continues after sinking a ship', () => {
         // Place another ship to ensure not all ships are sunk
-        const secondShip = Ship(2);
+        const secondShip = Ship('Submarine', 2);
         gameboard.placeShip(secondShip, 5, 5, true);
+        secondShip.setPositions([{ x: 5, y: 5 }, { x: 5, y: 6 }]);
     
         // Sink the first ship by attacking all parts of it
         gameboard.receiveAttack([0, 0]);
@@ -47,8 +50,9 @@ describe('Attack Logic', () => {
 
     test('correctly handles all ships being sunk', () => {
         // Place a second ship
-        const secondShip = Ship(2);
+        const secondShip = Ship('Submarine', 2);
         gameboard.placeShip(secondShip, 2, 0, true);
+        secondShip.setPositions([{ x: 2, y: 0 }, { x: 2, y: 1 }]);
         
         // Sink both ships
         gameboard.receiveAttack([0, 0]);

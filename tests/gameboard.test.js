@@ -5,7 +5,7 @@ describe('Gameboard Factory', () => {
     test('places a ship horizontally', () => {
         const gameboard = Gameboard();
         const ship = Ship('Destroyer', 3); // Ship with name 'Destroyer' and length 3
-        gameboard.placeShip(ship, 0, 0, 'horizontal');
+        gameboard.placeShip(ship, 0, 0, true);
         expect(gameboard.board[0][0]).toBe(ship);
         expect(gameboard.board[0][1]).toBe(ship);
         expect(gameboard.board[0][2]).toBe(ship);
@@ -31,7 +31,7 @@ describe('Gameboard Factory', () => {
     test('records a hit on the ship', () => {
         const gameboard = Gameboard();
         const ship = Ship('Patrol Boat', 2);
-        gameboard.placeShip(ship, 0, 0, 'horizontal');
+        gameboard.placeShip(ship, 0, 0, true);
         gameboard.receiveAttack([0, 0]);
         expect(ship.hits).toBe(1);
     });
@@ -44,20 +44,23 @@ describe('Gameboard Factory', () => {
 
     test('checks if all ships are sunk', () => {
         const gameboard = Gameboard();
-        const ship1 = Ship('Cruiser', 2);
-        const ship2 = Ship('Battleship', 3);
-        gameboard.placeShip(ship1, 0, 0, 'horizontal');
-        gameboard.placeShip(ship2, 2, 0, 'horizontal');
-
-        // Sink ship1
+        const cruiser = Ship('Cruiser', 2);
+        const battleship = Ship('Battleship', 3);
+    
+        // Place ships correctly
+        gameboard.placeShip(cruiser, 0, 0, true);      // Horizontal placement
+        gameboard.placeShip(battleship, 2, 0, true);   // Horizontal placement
+    
+        // Attack all positions of the ships
         gameboard.receiveAttack([0, 0]);
-        gameboard.receiveAttack([0, 1]);
-
-        // Sink ship2
+        gameboard.receiveAttack([0, 1]);  // This should sink Cruiser
         gameboard.receiveAttack([2, 0]);
         gameboard.receiveAttack([2, 1]);
-        gameboard.receiveAttack([2, 2]);
-
+        gameboard.receiveAttack([2, 2]);  // This should sink Battleship
+    
+        // Check if all ships are sunk
         expect(gameboard.allShipsSunk()).toBe(true);
     });
+
+    
 });

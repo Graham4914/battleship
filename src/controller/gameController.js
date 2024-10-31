@@ -1,6 +1,8 @@
 import { Gameboard } from "../model/gameboard.js";
 import { GridView } from "../view/gridView.js";
 import { Player } from "../model/player.js";  // Import Player model
+
+let playerGridElement, computerGridElement, statusMessageElement,toggleAxisButton;
 import { Ship } from "../model/ship.js";
 
 // Initialize the gameboards for player and computer
@@ -12,14 +14,46 @@ console.log('Initialized computerBoard shipCells:', computerBoard.shipCells inst
 const player = Player();
 const computer = Player(true);  // Computer player
 
-// Initialize the view elements (grids and status message)
-export const playerGridElement = document.getElementById('player-grid');
-export const computerGridElement = document.getElementById('computer-grid');
-const statusMessageElement = document.querySelector('.status-message');
+// Wait for DOM content to load
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize the view elements (grids and status message)
+    playerGridElement = document.getElementById('player-grid');
+    computerGridElement = document.getElementById('computer-grid');
+    statusMessageElement = document.querySelector('.status-message');
+    toggleAxisButton = document.getElementById('toggle-axis-btn');
+    toggleAxisButton.addEventListener('click', rotateShip);
 
-// Initialize grids
-GridView.createGrid(playerGridElement, playerBoard.board);
-GridView.createGrid(computerGridElement, computerBoard.board);
+    // Initialize grids
+    GridView.createGrid(playerGridElement, playerBoard.board);
+    GridView.createGrid(computerGridElement, computerBoard.board);
+
+    // Set up event listeners
+    handleShipPlacement(playerGridElement, playerBoard);
+   
+
+    // Start game setup
+    const startGameBtn = document.getElementById('start-game-btn');
+    startGameBtn.addEventListener('click', () => {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        startGame();  // Proceed to ship placement phase
+    });
+});
+
+// Getter functions for accessing DOM elements
+export function getPlayerGridElement() {
+    return playerGridElement;
+}
+
+export function getComputerGridElement() {
+    return computerGridElement;
+}
+
+
+
+
+
+
 
 let currentShipIndex = 0;  // Track the current ship being placed
 let allShipsPlaced = false;  // Flag to check if all ships are placed
@@ -105,11 +139,7 @@ function rotateShip() {
     GridView.clearHighlights(playerGridElement); 
 }
 
-const toggleAxisButton = document.getElementById('toggle-axis-btn');
 
-toggleAxisButton.addEventListener('click', () => {
-    rotateShip();  // Call the rotate function when the button is clicked
-});
 
 
 
@@ -297,8 +327,20 @@ function handleAttackResult(attackResult, x, y, attacker = 'computer') {
 
 // Restart game functionality
 function startGame() {
+
+    playerGridElement = getPlayerGridElement();
+    computerGridElement = getComputerGridElement();
+
+
+    if (!playerGridElement || !computerGridElement) {
+        console.error('Grid elements are not initialized properly. Aborting startGame.');
+        return;
+    }
+
     playerBoard.reset();
     computerBoard.reset();
+
+
 
     GridView.clearGrid(playerGridElement);
     GridView.clearGrid(computerGridElement);
