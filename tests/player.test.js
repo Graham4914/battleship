@@ -13,31 +13,37 @@ describe('Player Factory', () => {
     expect(ship.hits).toBe(1); // The ship should register a hit
   });
 
-  test('computer generates a valid random attack', () => {
+  test('computer generates a valid attack', () => {
     const computer = Player(true);
     const enemyBoard = Gameboard();
-    
-    // Perform a random attack
-    const attackCoords = computer.randomAttack(enemyBoard);
-    
+
+    // Perform an attack using computerAttack
+    const attackResult = computer.computerAttack(enemyBoard);
+
+    // Get the attack coordinates
+    const attackCoords = attackResult.coords;
+
     // Verify the attack coordinates are valid and within the board range
     expect(attackCoords[0]).toBeGreaterThanOrEqual(0);
     expect(attackCoords[0]).toBeLessThan(10);
     expect(attackCoords[1]).toBeGreaterThanOrEqual(0);
     expect(attackCoords[1]).toBeLessThan(10);
-    
-    // Verify the attack result is recorded properly (miss, hit, etc.)
-    const attackResult = enemyBoard.receiveAttack(attackCoords);
-    expect(['miss', 'hit', 'sunk']).toContain(attackResult.result);
 });
 
-  test('computer does not repeat the same attack', () => {
-    const computer = Player(true);
-    const enemyBoard = Gameboard();
-    
-    const firstAttack = computer.randomAttack(enemyBoard);
-    const secondAttack = computer.randomAttack(enemyBoard);
-    
-    expect(firstAttack).not.toEqual(secondAttack); // Ensure different coordinates are attacked
-  });
+
+test('computer does not repeat the same attack', () => {
+  const computer = Player(true);
+  const enemyBoard = Gameboard();
+
+  // Perform the first attack
+  const firstAttackResult = computer.computerAttack(enemyBoard);
+  const firstAttack = firstAttackResult.coords;
+
+  // Perform the second attack
+  const secondAttackResult = computer.computerAttack(enemyBoard);
+  const secondAttack = secondAttackResult.coords;
+
+  expect(firstAttack).not.toEqual(secondAttack); // Ensure different coordinates are attacked
+});
+
 });

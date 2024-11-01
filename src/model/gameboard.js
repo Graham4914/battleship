@@ -164,7 +164,7 @@ function receiveAttack([x, y]) {
         }
 
         console.log(`Hit at (${x}, ${y})`);
-        return { result: 'hit', coordinates: [x, y] };
+        return { result: 'hit', coordinates: [x, y], ship: target }; // Include 'ship' here
     }
 
     console.error(`Error: Invalid target at (${x}, ${y})`);

@@ -6,15 +6,18 @@ describe('Computer Attack Logic', () => {
     test('computer generates random attack', () => {
         const computer = Player(true);
         const enemyBoard = Gameboard();
-        const attackCoords = computer.randomAttack(enemyBoard);
-        
-        // Simulate an attack and check the result
-        const attackResult = enemyBoard.receiveAttack(attackCoords);
-        if (attackResult.result === 'miss') {
-            expect(enemyBoard.missedShots).toContainEqual(attackCoords);
-        }
+    
+        // Perform an attack using computerAttack
+        const attackResult = computer.computerAttack(enemyBoard);
+        const attackCoords = attackResult.coords;
+    
+        expect(attackResult.result).toMatch(/hit|miss|sunk/);
+        expect(attackCoords[0]).toBeGreaterThanOrEqual(0);
+        expect(attackCoords[0]).toBeLessThan(10);
+        expect(attackCoords[1]).toBeGreaterThanOrEqual(0);
+        expect(attackCoords[1]).toBeLessThan(10);
     });
-
+    
     test('Computer attacks adjacent cells after a hit', () => {
         const computer = Player(true);
         const gameboard = Gameboard();
