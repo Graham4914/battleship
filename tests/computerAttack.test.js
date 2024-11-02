@@ -60,4 +60,31 @@ describe('Computer Attack Logic', () => {
     
         expect(thirdAttack).toEqual([5, 7]);
     });
+
+    test('AI reverses direction after missing in one direction on a vertical ship', () => {
+        const computer = Player(true);
+        const gameboard = Gameboard();
+    
+        // Place a vertical ship from (2,7) to (5,7)
+        const ship = Ship('Battleship', 4);
+        gameboard.placeShip(ship, 2, 7, false);
+    
+        // First hit at (3,7)
+        computer.computerAttack(gameboard, [3, 7]);
+    
+        // Second hit at (2,7)
+        computer.computerAttack(gameboard, [2, 7]);
+    
+        // AI should now determine axis as vertical and have potential target at (1,7)
+        // Simulate AI missing at (1,7)
+        computer.computerAttack(gameboard, [1, 7]);
+    
+        // AI should reverse direction and attack (4,7)
+        const fourthAttackResult = computer.computerAttack(gameboard);
+        const fourthAttack = fourthAttackResult.coords;
+    
+        expect(fourthAttack).toEqual([4, 7]);
+    });
+    
+
 });

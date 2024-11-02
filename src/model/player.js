@@ -2,18 +2,19 @@ export function Player(isComputer = false) {
     const previousMoves = new Set();
     let activeTargets = []; // Queue of active targets
 
-    // Function to create a new active target
     function createNewActiveTarget(ship, hitCoords) {
         const [x, y] = hitCoords;
         const target = {
             ship: ship,
             hits: [hitCoords],
             potentialTargets: getAdjacentCells(x, y),
-            axis: null, // Will be set when two hits are recorded
+            axis: null, // Will be set after second hit
+            direction: null, //Will be set when axis determined
+            reversed: false, // Tracks if direction has been reversed
         };
         return target;
     }
-
+    
     // Function to get adjacent cells
     function getAdjacentCells(x, y) {
         const directions = [
@@ -31,72 +32,89 @@ export function Player(isComputer = false) {
         });
     }
 
-    // Function to update target's potential targets based on hits
     function updateTargetPotential(target) {
         const { hits, axis } = target;
-        const [x, y] = hits[hits.length - 1];
     
         if (hits.length === 1) {
             // Only one hit, add adjacent cells
+            const [x, y] = hits[0];
             target.potentialTargets = getAdjacentCells(x, y);
-        } else if (!axis) {
-            // Determine the axis
-            const [x1, y1] = hits[0];
-            const [x2, y2] = hits[1];
-    
-            if (x1 === x2) {
-                // x is the same, so ship is horizontal
-                target.axis = 'horizontal';
-            } else {
-                // y is the same, so ship is vertical
-                target.axis = 'vertical';
-            }
-            console.log(`Axis determined: ${target.axis}`);
-            // Update potential targets along the axis
-            target.potentialTargets = getAxisAlignedCells(target);
         } else {
-            // Continue along the axis
+            if (!axis) {
+                // Determine the axis
+                const [x1, y1] = hits[0];
+                const [x2, y2] = hits[1];
+    
+                if (x1 === x2) {
+                    target.axis = 'horizontal'; // x is constant, so horizontal
+                } else if (y1 === y2) {
+                    target.axis = 'vertical';   // y is constant, so vertical
+                } else {
+                    console.error('Error: Hits are not aligned along an axis');
+                }
+    
+                console.log(`Axis determined: ${target.axis}`);
+            }
+    
+            // Ensure direction is set
+            if (target.direction === null || target.direction === undefined) {
+                const [x1, y1] = hits[0];
+                const [x2, y2] = hits[1];
+    
+                if (target.axis === 'horizontal') {
+                    target.direction = y2 > y1 ? 'positive' : 'negative';
+                } else if (target.axis === 'vertical') {
+                    target.direction = x2 > x1 ? 'positive' : 'negative';
+                }
+            }
+    
+            // Generate potential targets along the axis
             target.potentialTargets = getAxisAlignedCells(target);
         }
     }
     
-
     // Function to get cells aligned along the axis
     function getAxisAlignedCells(target) {
-        const { hits, axis } = target;
-        const [x1, y1] = hits[0]; // First hit
-        const [x2, y2] = hits[hits.length - 1]; // Last hit
+        const { hits, axis, direction, reversed } = target;
+        const [x, y] = reversed ? hits[0] : hits[hits.length - 1]; // Use first hit if reversed
     
-        let potentialTargets = [];
+        const potentialTargets = [];
     
         if (axis === 'horizontal') {
-            // Positive direction from last hit
-            let newYPos = y2 + 1;
-            if (newYPos < 10 && !previousMoves.has(`${x2},${newYPos}`)) {
-                potentialTargets.push([x2, newYPos]);
-            }
-    
-            // Negative direction from first hit
-            let newYNeg = y1 - 1;
-            if (newYNeg >= 0 && !previousMoves.has(`${x1},${newYNeg}`)) {
-                potentialTargets.push([x1, newYNeg]);
+            if (direction === 'positive') {
+                // Move right
+                let newY = y + 1;
+                if (newY < 10 && !previousMoves.has(`${x},${newY}`)) {
+                    potentialTargets.push([x, newY]);
+                }
+            } else if (direction === 'negative') {
+                // Move left
+                let newY = y - 1;
+                if (newY >= 0 && !previousMoves.has(`${x},${newY}`)) {
+                    potentialTargets.push([x, newY]);
+                }
             }
         } else if (axis === 'vertical') {
-            // Positive direction from last hit
-            let newXPos = x2 + 1;
-            if (newXPos < 10 && !previousMoves.has(`${newXPos},${y2}`)) {
-                potentialTargets.push([newXPos, y2]);
-            }
-    
-            // Negative direction from first hit
-            let newXNeg = x1 - 1;
-            if (newXNeg >= 0 && !previousMoves.has(`${newXNeg},${y1}`)) {
-                potentialTargets.push([newXNeg, y1]);
+            if (direction === 'positive') {
+                // Move down
+                let newX = x + 1;
+                if (newX < 10 && !previousMoves.has(`${newX},${y}`)) {
+                    potentialTargets.push([newX, y]);
+                }
+            } else if (direction === 'negative') {
+                // Move up
+                let newX = x - 1;
+                if (newX >= 0 && !previousMoves.has(`${newX},${y}`)) {
+                    potentialTargets.push([newX, y]);
+                }
             }
         }
     
         return potentialTargets;
     }
+    
+    
+    
     // Function to generate a random attack coordinate
     function randomAttack() {
         let x, y, coords;
@@ -114,53 +132,55 @@ export function Player(isComputer = false) {
     // The main computer attack function
     function computerAttack(gameboard, testAttackCoords = null) {
         console.log('--- computerAttack START ---');
-        console.log('Active Targets before attack:', activeTargets);
+        console.log('Active Targets before attack:', JSON.stringify(activeTargets, null, 2));
         console.log('Previous Moves:', Array.from(previousMoves));
     
         let attackCoords;
+        let target; // Declare target here for scope
     
         if (testAttackCoords) {
-            // Always use testAttackCoords if provided
             attackCoords = testAttackCoords;
         } else if (activeTargets.length > 0) {
-            // Remove any targets that have no potential targets left
-            while (activeTargets.length > 0 && activeTargets[0].potentialTargets.length === 0) {
-                // Remove exhausted active targets from the front of the queue
-                activeTargets.shift();
-            }
+            // Always work on the first active target
+            target = activeTargets[0];
     
-            if (activeTargets.length > 0) {
-                // Always work on the first active target
-                const currentTarget = activeTargets[0];
+            // Ensure potential targets are up to date
+            target.potentialTargets = target.potentialTargets.filter(coords => !previousMoves.has(coords.toString()));
     
-                // Ensure potential targets are up to date
-                currentTarget.potentialTargets = currentTarget.potentialTargets.filter(coords => !previousMoves.has(coords.toString()));
-    
-                if (currentTarget.potentialTargets.length > 0) {
-                    attackCoords = currentTarget.potentialTargets.shift();
+            // If no potential targets, update them
+            if (target.potentialTargets.length === 0) {
+                if (!target.reversed) {
+                    // Reverse direction
+                    target.reversed = true;
+                    target.direction = target.direction === 'positive' ? 'negative' : 'positive';
+                    console.log('Reversing direction for target:', target);
+                    updateTargetPotential(target);
                 } else {
-                    // No potential targets left for this target; remove it
+                    // No more options; remove target
                     activeTargets.shift();
+                    console.log('No more potential targets after reversing, removing target');
                     return computerAttack(gameboard); // Retry with updated active targets
                 }
-            } else {
-                attackCoords = randomAttack();
             }
+            
+    
+            // Now, pick the next potential target
+            attackCoords = target.potentialTargets.shift();
         } else {
             attackCoords = randomAttack();
         }
-
+    
         const [x, y] = attackCoords;
         const attackResult = gameboard.receiveAttack(attackCoords);
-
+    
         // Mark the cell as attacked
         previousMoves.add(`${x},${y}`);
-
+    
         // Process the result of the attack
         if (attackResult.result === 'hit' || attackResult.result === 'sunk') {
             // Check if we already have an active target for this ship
-            let target = activeTargets.find(t => t.ship.id === attackResult.ship.id);
-
+            target = activeTargets.find(t => t.ship.id === attackResult.ship.id);
+    
             if (!target) {
                 // Create a new active target and add it to the end of the queue
                 target = createNewActiveTarget(attackResult.ship, [x, y]);
@@ -170,20 +190,23 @@ export function Player(isComputer = false) {
                 target.hits.push([x, y]);
                 updateTargetPotential(target);
             }
-
+    
             if (attackResult.result === 'sunk') {
                 // Remove the sunk ship from active targets
                 activeTargets = activeTargets.filter(t => t.ship.id !== attackResult.ship.id);
             }
         }
-
-        console.log('Selected Attack Coordinates:', attackCoords);
-        console.log('Active Targets after attack:', activeTargets);
+    
+        // After processing the result of the attack
+        console.log('Attack Result:', attackResult);
+        if (typeof target !== 'undefined') {
+            console.log('Updated Active Target:', JSON.stringify(target, null, 2));
+        }
+        console.log('Active Targets after attack:', JSON.stringify(activeTargets, null, 2));
         console.log('--- computerAttack END ---');
-
         return { coords: attackCoords, result: attackResult.result };
     }
-
+    
     return {
         attack: (gameboard, coords) => gameboard.receiveAttack(coords),  // For human player
         computerAttack: isComputer ? computerAttack : null,  // Only for computer player
