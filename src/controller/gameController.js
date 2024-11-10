@@ -1,9 +1,13 @@
+
 import { Gameboard } from "../model/gameboard.js";
 import { GridView } from "../view/gridView.js";
 import { Player } from "../model/player.js";  // Import Player model
+import { Ship } from "../model/ship.js";
+
 
 let playerGridElement, computerGridElement, statusMessageElement,toggleAxisButton;
-import { Ship } from "../model/ship.js";
+let playerAttackHandler = null;
+
 
 // Initialize the gameboards for player and computer
 const playerBoard = Gameboard();
@@ -186,7 +190,13 @@ computerBoard.ships.forEach(ship => {
 
 // Handle player attacks
 function addPlayerAttackListener() {
-    computerGridElement.addEventListener('click', (e) => {
+    // Remove existing event listener if it exists
+    if (playerAttackHandler) {
+        computerGridElement.removeEventListener('click', playerAttackHandler);
+    }
+
+    // Define the event handler function
+    playerAttackHandler = function (e) {
         const cell = e.target;
         const cellIndex = Array.from(computerGridElement.children).indexOf(cell);
         const x = Math.floor(cellIndex / 10);
@@ -206,8 +216,12 @@ function addPlayerAttackListener() {
                 handleComputerAttack();
             }, 1500);
         }
-    });
+    };
+
+    // Add the event listener
+    computerGridElement.addEventListener('click', playerAttackHandler);
 }
+
 
 // Handle computer attacks
 function handleComputerAttack() {
@@ -288,6 +302,11 @@ startGameBtn.addEventListener('click', () => {
 
 // Handle the result of attacks 
 function handleAttackResult(attackResult, x, y, attacker = 'computer') {
+
+    if (attackResult.result === 'already_attacked') {  // Change this line
+        console.warn("Attempted attack on already attacked cell.");
+        return;
+    }
     // Determine which grid and which cell to target
     const gridElement = (attacker === 'computer') ? playerGridElement : computerGridElement;
     const cell = gridElement.children[x * 10 + y]; 
@@ -326,7 +345,7 @@ function handleAttackResult(attackResult, x, y, attacker = 'computer') {
 
 
 // Restart game functionality
-function startGame() {
+function startGame() { 
 
     playerGridElement = getPlayerGridElement();
     computerGridElement = getComputerGridElement();
