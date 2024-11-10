@@ -156,6 +156,9 @@ function startBattlePhase() {
     const gridContainer = document.querySelector('.grid-container');
     gridContainer.classList.add('slide-left', 'show-battle');
     computerGridElement.style.visibility = 'visible';
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.classList.add('game-started');
+
 
     // Update the status message
     GridView.updateStatus('Computer is placing ships...');
@@ -349,7 +352,8 @@ function startGame() {
 
     playerGridElement = getPlayerGridElement();
     computerGridElement = getComputerGridElement();
-
+        // Add the 'game-started' class to the game container
+ 
 
     if (!playerGridElement || !computerGridElement) {
         console.error('Grid elements are not initialized properly. Aborting startGame.');

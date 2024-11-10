@@ -21,6 +21,10 @@ body {
     align-items: center;
 }
 
+header {
+    width: 100%;
+    text-align: center;
+}
 /* Header styling */
 header h1 {
     font-size: 3rem;
@@ -49,6 +53,24 @@ header h1 {
     position: relative;
 }
 
+
+.grid-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+/* Show grid headers when game has started */
+.game-container.game-started .grid-section h2 {
+    display: block;
+}
+
+
+.grid-section h2 {
+    display: none;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #333;
+}
 /* Styling for individual grids (player and computer) */
 .grid {
     display: grid;
@@ -123,6 +145,18 @@ header h1 {
     text-align: center;
 }
 
+.status-message {
+    margin: 15px auto;    /* Center horizontally */
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    background-color: #fff;
+    border: 2px solid #333;
+    border-radius: 8px;
+    max-width: 600px;
+}
 
 #toggle-axis-btn {
     display: block;
@@ -147,6 +181,26 @@ header h1 {
     background-color: blue;  /* Mark misses with blue */
 }
 
+.restart-container {
+    margin: 20px auto;
+    text-align: center;
+}
+
+#restart-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #4CAF50;  /* Green background */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#restart-btn:hover {
+    background-color: #45a049;  /* Darker green on hover */
+}
+
+
 /* .cell {
     width: 40px;
     height: 40px;
@@ -157,6 +211,8 @@ header h1 {
     font-size: 16px;
     cursor: pointer;
 } */
+
+
 
 
 /* Responsive layout */

@@ -19,15 +19,18 @@ export function Player(isComputer = false) {
     function handleFirstHit(hitCoords) {
         const target = {
             hits: [hitCoords],
+            unsunkHits: [hitCoords],
             potentialTargets: getAdjacentCells(hitCoords[0], hitCoords[1]),
             attackAxis: null,
             direction: null,
-            reversed: false
+            reversed: false,
+            triedAxes: new Set()
         };
         console.log("Handling first hit. Created new target:", JSON.stringify(target));
         activeTargets.push(target);
         return target;
     }
+    
     
     // Helper function to get adjacent cells
     function getAdjacentCells(x, y) {
@@ -48,56 +51,45 @@ export function Player(isComputer = false) {
         const { hits, attackAxis, direction } = target;
         const potentialTargets = [];
     
+        // Use hits or unsunkHits based on context
+        let hitsToUse = target.unsunkHits && target.unsunkHits.length > 0 ? target.unsunkHits : target.hits;
+    
+        if (!hitsToUse || hitsToUse.length === 0) {
+            console.error('No hits to use for axis alignment');
+            return [];
+        }
+    
         // Extract X and Y values from hits
-        const xValues = hits.map(hit => hit[0]);
-        const yValues = hits.map(hit => hit[1]);
+        const xValues = hitsToUse.map(hit => hit[0]);
+        const yValues = hitsToUse.map(hit => hit[1]);
     
         const minX = Math.min(...xValues);
         const maxX = Math.max(...xValues);
         const minY = Math.min(...yValues);
         const maxY = Math.max(...yValues);
     
-        const fixedX = xValues[0];
-        const fixedY = yValues[0];
-    
         console.log(`\n--- Generating Axis-Aligned Cells ---`);
         console.log(`Attack axis: ${attackAxis}, Current direction: ${direction}`);
-        console.log(`Hits:`, JSON.stringify(hits));
+        console.log(`Hits:`, JSON.stringify(hitsToUse));
         console.log(`minX: ${minX}, maxX: ${maxX}, minY: ${minY}, maxY: ${maxY}`);
     
+        // Generate potential targets based on the axis and direction
         if (attackAxis === 'horizontal') {
-            if (direction === 'positive') {
-                // Move right from maxY + 1
-                const newY = maxY + 1;
-                if (newY < 10 && !previousMoves.has(`${fixedX},${newY}`)) {
-                    potentialTargets.push([fixedX, newY]);
-                }
-            } else if (direction === 'negative') {
-                // Move left from minY - 1
-                const newY = minY - 1;
-                if (newY >= 0 && !previousMoves.has(`${fixedX},${newY}`)) {
-                    potentialTargets.push([fixedX, newY]);
-                }
+            const nextY = direction === 'positive' ? maxY + 1 : minY - 1;
+            if (nextY >= 0 && nextY < 10 && !previousMoves.has(`${minX},${nextY}`)) {
+                potentialTargets.push([minX, nextY]);
             }
         } else if (attackAxis === 'vertical') {
-            if (direction === 'positive') {
-                // Move down from maxX + 1
-                const newX = maxX + 1;
-                if (newX < 10 && !previousMoves.has(`${newX},${fixedY}`)) {
-                    potentialTargets.push([newX, fixedY]);
-                }
-            } else if (direction === 'negative') {
-                // Move up from minX - 1
-                const newX = minX - 1;
-                if (newX >= 0 && !previousMoves.has(`${newX},${fixedY}`)) {
-                    potentialTargets.push([newX, fixedY]);
-                }
+            const nextX = direction === 'positive' ? maxX + 1 : minX - 1;
+            if (nextX >= 0 && nextX < 10 && !previousMoves.has(`${nextX},${minY}`)) {
+                potentialTargets.push([nextX, minY]);
             }
         }
     
         console.log("New potential targets after axis alignment:", JSON.stringify(potentialTargets));
         return potentialTargets;
     }
+    
     
     
     
@@ -117,45 +109,72 @@ export function Player(isComputer = false) {
         } else {
             console.log("Current target:", JSON.stringify(target));
     
-            // Check if potential targets are empty
-            if (target.potentialTargets.length === 0) {
-                // Check if we have already reversed direction
-                if (!target.reversed) {
-                    // Reverse direction and regenerate potential targets
-                    target.direction = target.direction === 'positive' ? 'negative' : 'positive';
-                    target.reversed = true;
-                    console.log(`Reversing direction to ${target.direction}`);
-                    target.potentialTargets = getAxisAlignedCells(target);
-    
-                    if (target.potentialTargets.length === 0) {
-                        // Both directions exhausted
-                        console.log("Both directions exhausted. Removing target.");
-                        activeTargets.shift();
-                        target = null;
-                        attackCoords = randomAttack();
-                        console.log("Random attack selected after exhausting targets:", attackCoords);
+            while (true) {
+                if (target.potentialTargets.length === 0) {
+                    if (!target.reversed) {
+                        // Reverse direction
+                        target.direction = target.direction === 'positive' ? 'negative' : 'positive';
+                        target.reversed = true;
+                        console.log(`Reversing direction to ${target.direction}`);
+                        target.potentialTargets = getAxisAlignedCells(target);
                     } else {
-                        attackCoords = target.potentialTargets.shift();
-                        console.log("Targeting potential adjacent cell after reversing:", attackCoords);
-                    }
-                } else {
-                    // Both directions exhausted
-                    console.log("Both directions exhausted. Removing target.");
-                    activeTargets.shift();
-                    target = null;
-                    attackCoords = randomAttack();
-                    console.log("Random attack selected after exhausting targets:", attackCoords);
-                }
-            } else {
-                attackCoords = target.potentialTargets.shift();
-                console.log("Targeting potential adjacent cell:", attackCoords);
-            }
-        }
+                        // Both directions exhausted
+                        target.triedAxes.add(target.attackAxis);
     
-        if (!attackCoords) {
-            console.warn("No valid adjacent cell. Falling back to random.");
-            attackCoords = randomAttack();
-            console.log("Random attack selected after no valid adjacent cells:", attackCoords);
+                        if (target.unsunkHits.length > 0) {
+                            // Switch to perpendicular axis
+                            const perpendicularAxis = target.attackAxis === 'horizontal' ? 'vertical' : 'horizontal';
+                            if (!target.triedAxes.has(perpendicularAxis)) {
+                                target.attackAxis = perpendicularAxis;
+                                target.direction = 'positive';
+                                target.reversed = false;
+                                console.log(`Switching to perpendicular axis: ${target.attackAxis}`);
+                                target.potentialTargets = [];
+    
+                                target.unsunkHits.forEach(hit => {
+                                    const newTargets = getAxisAlignedCells({
+                                        hits: [hit],
+                                        attackAxis: target.attackAxis,
+                                        direction: target.direction
+                                    });
+                                    target.potentialTargets.push(...newTargets);
+                                });
+                            } else {
+                                // Both axes tried
+                                console.log("Both axes exhausted. Removing target.");
+                                activeTargets = activeTargets.filter(t => t !== target);
+                                target = null;
+                                attackCoords = randomAttack();
+                                console.log("Random attack selected after exhausting targets:", attackCoords);
+                                break;
+                            }
+                        } else {
+                            // No unsunk hits left
+                            console.log("No unsunk hits left. Removing target.");
+                            activeTargets = activeTargets.filter(t => t !== target);
+                            target = null;
+                            attackCoords = randomAttack();
+                            console.log("Random attack selected after exhausting targets:", attackCoords);
+                            break;
+                        }
+                    }
+                }
+    
+                if (target && target.potentialTargets.length > 0) {
+                    attackCoords = target.potentialTargets.shift();
+                    console.log("Targeting potential adjacent cell:", attackCoords);
+                    if (!previousMoves.has(`${attackCoords[0]},${attackCoords[1]}`)) {
+                        break;
+                    }
+                } else if (!target) {
+                    break;
+                }
+            }
+    
+            if (!attackCoords) {
+                attackCoords = randomAttack();
+                console.log("No valid adjacent cell. Random attack selected:", attackCoords);
+            }
         }
     
         console.log("Final attack coordinates:", attackCoords);
@@ -173,6 +192,7 @@ export function Player(isComputer = false) {
             } else {
                 // Append the hit coordinates to the current target's hits
                 target.hits.push(attackCoords);
+                target.unsunkHits.push(attackCoords);
                 console.log("Updated target after additional hit:", JSON.stringify(target));
             }
     
@@ -181,26 +201,50 @@ export function Player(isComputer = false) {
                 target.attackAxis = determineAttackAxis(target.hits);
                 if (target.attackAxis) {
                     console.log(`Attack axis determined: ${target.attackAxis}`);
-                    // Reset direction and reversed flag when attack axis is determined
                     target.direction = 'positive';
                     target.reversed = false;
+                    target.triedAxes.add(target.attackAxis);
                     target.potentialTargets = getAxisAlignedCells(target);
+                } else {
+                    // No axis determined, use adjacent cells
+                    target.potentialTargets = getAdjacentCells(attackCoords[0], attackCoords[1]);
                 }
             } else {
                 // Generate new potential targets along the axis
                 target.potentialTargets = getAxisAlignedCells(target);
             }
     
-            // Remove target if ship is sunk
+            // Remove hit from unsunkHits if ship is sunk
             if (attackResult.result === 'sunk') {
                 console.log("Ship sunk!");
-                activeTargets.shift();
+    
+                // Remove all hits belonging to the sunk ship from unsunkHits
+                target.unsunkHits = target.unsunkHits.filter(coord =>
+                    !attackResult.ship.positions.some(pos => pos.x === coord[0] && pos.y === coord[1])
+                );
+    
+                // Remove hits from target.hits as well
+                target.hits = target.hits.filter(coord =>
+                    !attackResult.ship.positions.some(pos => pos.x === coord[0] && pos.y === coord[1])
+                );
+    
+                if (target.unsunkHits.length === 0) {
+                    // All ships in this cluster are sunk
+                    activeTargets = activeTargets.filter(t => t !== target);
+                    console.log("All ships in cluster sunk. Removing target.");
+                    target = null;
+                } else {
+                    console.log("Ships remain in cluster. Continuing attack.");
+                    // Generate new potential targets along the same axis
+                    target.potentialTargets = getAxisAlignedCells(target);
+                }
             }
         }
     
         console.log("Active Targets at end:", JSON.stringify(activeTargets));
         return { coords: attackCoords, result: attackResult.result };
     }
+    
     
     
  function determineAttackAxis(hits) {

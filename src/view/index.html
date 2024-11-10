@@ -22,20 +22,26 @@
         <div class="status-message">
             <p>Place your ships...</p>
         </div>
+        <div class="restart-container">
+            <button id="restart-btn" style="display: none;">Restart Game</button>
+        </div>
         <div class="axis-toggle">
             <button id="toggle-axis-btn">Toggle Axis</button>
         </div>
 
         <div class="grid-container">
-            <div class="grid player-grid" id="player-grid">
-                <!-- Player grid -->
+            <div class="grid-section">
+                <h2>Player Board</h2>
+                <div class="grid player-grid" id="player-grid">
+                    <!-- Player grid -->
+                </div>
             </div>
-            <div class="grid computer-grid" id="computer-grid">
-                <!-- Computer grid -->
+            <div class="grid-section">
+                <h2>Computer Board</h2>
+                <div class="grid computer-grid" id="computer-grid">
+                    <!-- Computer grid -->
+                </div>
             </div>
-        </div>
-        <div class="restart-container">
-            <button id="restart-btn" style="display: none;">Restart Game</button>
         </div>
     </div>
 </body>

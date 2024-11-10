@@ -122,6 +122,24 @@ describe('Computer Attack Logic', () => {
         expect(reverseAttack).toEqual([4, 7]);
     });
     
+    test('AI handles multiple adjacent ships along an axis', () => {
+        const computer = Player(true);
+        const gameboard = Gameboard();
+    
+        // Place multiple horizontal ships stacked vertically at x = 5
+        gameboard.placeShip(Ship('Destroyer', 2), 5, 1, true);
+        gameboard.placeShip(Ship('Submarine', 3), 5, 2, true);
+        gameboard.placeShip(Ship('Cruiser', 3), 5, 3, true);
+        gameboard.placeShip(Ship('Battleship', 4), 5, 4, true);
+        gameboard.placeShip(Ship('Carrier', 5), 5, 5, true);
+    
+        // Simulate the AI attacking until all ships are sunk
+        while (!gameboard.allShipsSunk()) {
+            computer.computerAttack(gameboard);
+        }
+    
+        expect(gameboard.allShipsSunk()).toBe(true);
+    });
     
 
 });
