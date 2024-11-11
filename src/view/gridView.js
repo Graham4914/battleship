@@ -26,30 +26,31 @@ export const GridView = {
 
 
 // Render the ship visually on the grid
-function renderShip(gridElement, ship, shipCells, startX, startY, isHorizontal) {
+function renderShip(gridElement, ship, shipCells, startX, startY, isHorizontal, isPlayer) {
     if (!(shipCells instanceof Set)) {
         console.error('Error: shipCells is not a Set. Received:', shipCells);
         return; // Exit if shipCells is invalid to prevent further issues
     }
 
     console.log('Ship Cells Contents:', Array.from(shipCells)); // Log the full contents of shipCells to ensure they are correct
+    if (isPlayer) {
+        for (let i = 0; i < ship.length; i++) {
+            const coordX = startX + (isHorizontal ? 0 : i);
+            const coordY = startY + (isHorizontal ? i : 0);
+            const index = isHorizontal ? (startX * 10 + (startY + i)) : ((startX + i) * 10 + startY);
+            const cell = gridElement.children[index];
 
-    for (let i = 0; i < ship.length; i++) {
-        const coordX = startX + (isHorizontal ? 0 : i);
-        const coordY = startY + (isHorizontal ? i : 0);
-        const index = isHorizontal ? (startX * 10 + (startY + i)) : ((startX + i) * 10 + startY);
-        const cell = gridElement.children[index];
+            console.log(`Checking if shipCells has (${coordX},${coordY})`);
 
-        console.log(`Checking if shipCells has (${coordX},${coordY})`);
-
-        if (cell && shipCells.has(`${coordX},${coordY}`)) {
-            cell.classList.add('placed-ship');  // Only add the class if it's a verified ship position
-            cell.dataset.shipName = ship.name;
-            console.log(`Rendering cell index: ${index} for ship ${ship.name}`);
-        } else if (cell) {
-            console.warn(`Cell index ${index} is either already occupied or not part of a valid ship, skipping render.`);
-        } else {
-            console.error(`Cell index ${index} is out of bounds or does not exist.`);
+            if (cell && shipCells.has(`${coordX},${coordY}`)) {
+                cell.classList.add('placed-ship');  // Only add the class if it's a player's ship
+                cell.dataset.shipName = ship.name;
+                console.log(`Rendering cell index: ${index} for ship ${ship.name}`);
+            } else if (cell) {
+                console.warn(`Cell index ${index} is either already occupied or not part of a valid ship, skipping render.`);
+            } else {
+                console.error(`Cell index ${index} is out of bounds or does not exist.`);
+            }
         }
     }
 }

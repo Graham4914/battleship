@@ -67,9 +67,16 @@ header h1 {
 
 .grid-section h2 {
     display: none;
+    opacity: 0;
     margin-bottom: 10px;
     font-size: 1.5rem;
     color: #333;
+    transition: opacity 0.5s ease;
+}
+
+.game-container.game-started .grid-section h2 {
+    display: block;
+    opacity: 1;
 }
 /* Styling for individual grids (player and computer) */
 .grid {
@@ -172,21 +179,28 @@ header h1 {
     transition: opacity 0.5s ease;
 }
 /* hits and misses on player grids */
-
+.cell.hit,
 .cell.placed-ship.hit {
     background-color: red;  /* Mark hits with red */
 }
+
+
 
 .cell.miss {
     background-color: blue;  /* Mark misses with blue */
 }
 
 .restart-container {
+    display: flex;
     margin: 20px auto;
     text-align: center;
+    justify-content: center;
+    align-items: center;
 }
 
 #restart-btn {
+    
+   
     padding: 10px 20px;
     font-size: 1rem;
     background-color: #4CAF50;  /* Green background */

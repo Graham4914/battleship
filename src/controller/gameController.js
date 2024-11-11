@@ -106,7 +106,7 @@ function handleShipPlacement(gridElement, playerBoard) {
             console.log('Ship placed successfully:', currentShip);
             console.log('Ship positions before render:', currentShip.positions);
             const playerShipCells = playerBoard.shipCells; // Get the player ship cells
-            GridView.renderShip(gridElement, currentShip, playerShipCells, x, y, isHorizontal);
+            GridView.renderShip(gridElement, currentShip, playerShipCells, x, y, isHorizontal, true);
             playerBoard.ships.push(currentShip);
             currentShipIndex++;
             if (currentShipIndex >= ships.length) {
@@ -181,7 +181,7 @@ computerBoard.ships.forEach(ship => {
 
     ship.positions.forEach(({ x, y }) => {
         console.log('Before calling renderShip:', computerShipCells instanceof Set ? 'Valid Set' : 'Not a Set', computerShipCells);
-        GridView.renderShip(computerGridElement, ship, computerShipCells, x, y, ship.isHorizontal);
+        GridView.renderShip(computerGridElement, ship, computerShipCells, x, y, ship.isHorizontal, false);
     });
 });
     // Update the status to notify the player it's their turn to attack
@@ -370,6 +370,10 @@ function startGame() {
 
     const gridContainer = document.querySelector('.grid-container');
     gridContainer.classList.remove('slide-left', 'show-battle');
+
+    
+      const gameContainer = document.getElementById('game-container');
+      gameContainer.classList.remove('game-started');
 
     computerGridElement.style.visibility = 'hidden';
     playerGridElement.style.visibility = 'visible';
