@@ -1,10 +1,11 @@
+// webpack.config.js
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import webpack from 'webpack';
 
-// Use fileURLToPath and import.meta.url to define __dirname in ES6 module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,25 +14,30 @@ export default {
     output: {
         filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
+        assetModuleFilename: 'assets/[hash][ext][query]', // Define output folder for assets
     },
     module: {
         rules: [
+            // CSS Loader
             {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
+            // JavaScript Loader
             {
-                test: /\.(js)$/,
+                test: /\.js$/,
                 exclude: /node_modules/,
                 use: ['babel-loader'],
             },
+            // Image Asset Module
             {
-                test: /\.(png|svg|jpg|gif)$/,
-                use: ['file-loader'],
+                test: /\.(png|svg|jpg|jpeg|gif)$/i,
+                type: 'asset/resource',
             },
+            // Font Asset Module
             {
-                test: /\.(woff|woff2|eot|ttf|otf)$/,
-                use: ['file-loader'],
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',
             },
         ],
     },

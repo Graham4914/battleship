@@ -11,7 +11,9 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ]
   },
   "keywords": [],
   "author": "graham shamran",
@@ -35,5 +37,4 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   }
-
 }

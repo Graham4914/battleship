@@ -7,7 +7,7 @@ import { Ship } from "../model/ship.js";
 
 let playerGridElement, computerGridElement, statusMessageElement,toggleAxisButton;
 let playerAttackHandler = null;
-
+let playerName = 'Player';
 
 // Initialize the gameboards for player and computer
 const playerBoard = Gameboard();
@@ -114,7 +114,7 @@ function handleShipPlacement(gridElement, playerBoard) {
                 statusMessageElement.textContent = 'All ships placed. Battle begins!';
                 startBattlePhase();
             } else {
-                statusMessageElement.textContent = `Place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
+                statusMessageElement.textContent = `${playerName}, place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
             }
             gridElement.removeEventListener('mouseover', mouseoverHandler);
             gridElement.addEventListener('mousemove', () => {
@@ -296,11 +296,20 @@ function disablePlayerActions() {
 const startScreen = document.getElementById('start-screen');
 const gameContainer = document.getElementById('game-container');
 const startGameBtn = document.getElementById('start-game-btn');
+const playerNameInput = document.getElementById('player-name-input');
 
 startGameBtn.addEventListener('click', () => {
-    startScreen.style.display = 'none';  // Hide the start screen
-    gameContainer.style.display = 'block';  // Show the main game
-    startGame();  // Proceed to ship placement phase
+    // Get the player's name from the input field
+    const inputName = playerNameInput.value.trim();
+    if (inputName !== '') {
+        playerName = inputName;
+    } else {
+        playerName = 'Player'; // Default name
+    }
+
+    startScreen.style.display = 'none'; // Hide the start screen
+    gameContainer.style.display = 'block'; // Show the main game
+    startGame(); // Proceed to ship placement phase
 });
 
 // Handle the result of attacks 
@@ -382,7 +391,7 @@ function startGame() {
 
     currentShipIndex = 0;
     allShipsPlaced = false;
-    GridView.updateStatus('Place your ships to begin the game.');
+    GridView.updateStatus(`Hi ${playerName}! Place your ships to begin the game.`);
 
     toggleAxisButton.style.display = 'block';
 
