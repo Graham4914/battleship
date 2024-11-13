@@ -83,21 +83,41 @@ function clearHighlights(gridElement) {
     });
 }
 
-function updateStatus(message) {
-    // Always select the element fresh to ensure it's not stale
+function updateStatus(message, delay = 0) {
     const statusMessageElement = document.querySelector('.status-message');
     if (!statusMessageElement) {
         console.error('Status message element not found.');
         return;
     }
 
-    console.log('Status Update:', message);
-    statusMessageElement.style.display = 'none';  // Force the element to repaint
-    setTimeout(() => {
+    // If the delay is 0, update immediately
+    if (delay === 0) {
         statusMessageElement.textContent = message;
-        statusMessageElement.style.display = 'block';  // Show the element again
-    }, 1000);  // 1-second delay for smoother flow
+        statusMessageElement.style.display = 'block'; // Ensure it's visible
+    } else {
+        // Use a timeout for delayed updates
+        setTimeout(() => {
+            statusMessageElement.textContent = message;
+            statusMessageElement.style.display = 'block';
+        }, delay);
+    }
 }
+
+// function updateStatus(message) {
+//     // Always select the element fresh to ensure it's not stale
+//     const statusMessageElement = document.querySelector('.status-message');
+//     if (!statusMessageElement) {
+//         console.error('Status message element not found.');
+//         return;
+//     }
+
+//     console.log('Status Update:', message);
+//     statusMessageElement.style.display = 'none';  // Force the element to repaint
+//     setTimeout(() => {
+//         statusMessageElement.textContent = message;
+//         statusMessageElement.style.display = 'block';  // Show the element again
+//     }, 1000);  // 1-second delay for smoother flow
+// }
 // Update the cell after an attack (hit or miss)
 function updateCell(cell, result) {
     if (result === 'hit') {

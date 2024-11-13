@@ -5,14 +5,29 @@
     box-sizing: border-box;
 }
 
+
+body, h1, h2, .status-message, button, input {
+    font-family: 'Roboto', sans-serif; /* Apply Roboto to general text and UI elements */
+}
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Roboto', sans-serif;
+    background-image: url(/src/assets/battlephase.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
+header h1 {
+    text-transform: uppercase;
+    font-size: 4rem; /* Adjust as needed */
+    font-weight: 800;
+    margin-bottom: 20px;
+   color: #fff  ;
+}
+
 
 #start-screen {
     display: flex;
@@ -74,21 +89,35 @@ header {
     text-align: center;
 }
 
-/* Header styling */
-header h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    color: #333;
+.status-message-container {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Vertically centers the content */
+    min-height: 50px; /* Adjust based on the expected height of the status message */
+    width: 100%; /* Adjusts to 80% of the parent width */
+    min-width: 300px; /* Ensures the container doesn't shrink below 300px */
+    max-width: 600px; /* Limits the container's maximum width to 600px */
+    margin: 0 auto; /* Centers the container */
+     border: 2px solid white; /* White border */
+    border-radius: 8px; /* Optional: rounded corners for a softer look */
+   
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); /* Optional: subtle glow effect */
 }
+
+
 
 /* Status message styling */
 .status-message {
-    margin: 15px 0;
+    transition: opacity 0.3s ease; /* Smooth transition if opacity changes */
+    margin: 0;
+    padding: 10px 20px; /* Ensures good spacing */
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight: 400; /* Moderate weight for readability */
     text-align: center;
-    color: #333;
+    color: white; /* White text */
+  
 }
+
 
 /* Center only the player grid initially */
 .grid-container {
@@ -96,7 +125,7 @@ header h1 {
     justify-content: center;  /* Center the player grid */
     width: 600px;  /* Set width for the player grid */
     max-width: 100vw;
-    margin: 0 40px;
+    margin: 0 40px 50px;
     /* gap: 100px; */
     position: relative;
 
@@ -120,7 +149,7 @@ header h1 {
     opacity: 0;
     margin-bottom: 10px;
     font-size: 1.5rem;
-    color: #333;
+    color: #fff;
     transition: opacity 0.5s ease;
 }
 
@@ -135,7 +164,7 @@ header h1 {
     grid-template-columns: repeat(10, 50px);  /* 10 columns with 50px width each */
     grid-template-rows: repeat(10, 50px);     /* 10 rows with 50px height each */
     gap: 2px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.2); /* Very faint background */
     border: 2px solid #333;
 }
 
@@ -173,14 +202,14 @@ header h1 {
 
 /* Grid cells */
 .grid div {
-    background-color: #ddd;
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent grid cells */
     width: 50px;
     height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    border: 1px solid #aaa;
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Light border for visibility */
 }
 
 .grid div.highlight {
@@ -189,68 +218,69 @@ header h1 {
 
 .grid div.placed-ship {
     background-color: #1e90ff;  /* Blue color for placed ships */
-    border: 1px solid #333;
+     border: 1px solid rgba(0, 0, 0, 0.3);; /* Add a subtle border for definition */
 }
 
 .grid div:hover {
-    background-color: #bbb;
+    background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
+    transition: background-color 0.3s ease;
     border-color: #000;  /* Darkens the grid line on hover */
 }
 
 /* Player Grid */
-#player-grid {
-    border-color: #4CAF50;
+#player-grid,
+#computer-grid{
+    border:none
 }
 
-/* Computer Grid */
-#computer-grid {
-    border-color: #F44336;
-}
+
 
 .axis-toggle {
     margin: 10px 0;
     text-align: center;
 }
 
-.status-message {
-    margin: 15px auto;    /* Center horizontally */
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #333;
-    background-color: #fff;
-    border: 2px solid #333;
-    border-radius: 8px;
-    max-width: 600px;
-}
+
 
 #toggle-axis-btn {
+    background-color: transparent; /* Transparent background */
+    color: white; /* White text */
+    border: solid 1px #fff; /* Remove border */
+    padding: 10px 15px; /* Add padding for better touch area */
+    font-size: 16px; /* Adjust font size as needed */
+    cursor: pointer;
+    border-radius: 5px; /* Optional: rounded corners */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Subtle glow */
+
     display: block;
     margin: 0 auto;
     position: relative;
     text-align: center;
-    padding: 10px 15px;
-    font-size: 16px;
-    cursor: pointer;
+
 }
 
-#toggle-axis-btn {
-    transition: opacity 0.5s ease;
-}
 
+
+
+#toggle-axis-btn::after {
+    content: " (R)"; /* Displays "(R)" after the button text */
+    font-size: 0.8em; /* Smaller font for the hint */
+    color: #ccc; /* Light gray for subtlety */
+}
 /* Hits and misses on grids */
 .cell.hit,
 .cell.placed-ship.hit {
-    background-color: red;  /* Mark hits with red */
+    background-color: rgba(255, 0, 0, 0.9); /* Slightly transparent red */
 }
 
 .cell.miss {
-    background-color: blue;  /* Mark misses with blue */
+    background-color: rgba(0, 0, 255, 0.7); /* Slightly transparent blue */
 }
 
 .restart-container {
-    display: flex;
+    position: relative;
+   padding-top: 20px;
     margin: 20px auto;
     text-align: center;
     justify-content: center;
@@ -258,13 +288,20 @@ header h1 {
 }
 
 #restart-btn {
-    padding: 10px 20px;
+    position: absolute;
+    top: 50%; /* Center vertically within the container */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust to ensure perfect centering */
+    display: none; /* Hidden by default */
     font-size: 1rem;
-    background-color: #4CAF50;  /* Green background */
-    color: white;
-    border: none;
-    border-radius: 5px;
+    background-color: transparent; /* Transparent background */
+    border: solid 1px #fff; /* Remove border */
+    padding: 10px 15px; /* Add padding for better touch area */
+    font-size: 16px; /* Adjust font size as needed */
     cursor: pointer;
+    color: white;
+    border-radius: 5px;
+  
 }
 
 #restart-btn:hover {
@@ -283,12 +320,6 @@ header h1 {
     }
 }
 
-.status-message {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: black !important;  /* Ensure text is visible */
-}
 
 /* [Addition] Smooth transition when hiding the computer grid */
 .grid-container:not(.show-battle) #computer-grid {

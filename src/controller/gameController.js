@@ -440,7 +440,8 @@ function startGame() {
     isHorizontal = true; // Reset orientation
 
     // Update status message
-    GridView.updateStatus(`Hi ${playerName}! Place your ships to begin the game.`);
+    GridView.updateStatus(`Hi ${playerName}! Shall we play a game?`);
+    GridView.updateStatus(`Hi ${playerName}! Place your ships to begin the game.`,2000);
 
     // Re-enable player actions
     enablePlayerActions();
