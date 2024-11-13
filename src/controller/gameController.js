@@ -9,6 +9,14 @@ let playerGridElement, computerGridElement, statusMessageElement,toggleAxisButto
 let playerAttackHandler = null;
 let playerName = 'Player';
 
+// Declare event handler variables
+let mouseoverHandler;
+let clickHandler;
+let rotateShipHandler;
+
+let computerAttackTimeout = null;
+
+
 // Initialize the gameboards for player and computer
 const playerBoard = Gameboard();
 const computerBoard = Gameboard();
@@ -75,7 +83,8 @@ let isHorizontal = true;  // Default ship placement orientation
 
 // Handle ship placement logic
 function handleShipPlacement(gridElement, playerBoard) {
-    const mouseoverHandler = (e) => {
+    // Define the mouseover handler
+    mouseoverHandler = function (e) {
         if (allShipsPlaced) return;
         const cell = e.target;
         const cellIndex = Array.from(gridElement.children).indexOf(cell);
@@ -92,7 +101,8 @@ function handleShipPlacement(gridElement, playerBoard) {
         }
     };
 
-    gridElement.addEventListener('click', function (e) {
+    // Define the click handler
+    clickHandler = function (e) {
         if (allShipsPlaced) return;
         GridView.clearHighlights(gridElement);
         const cell = e.target;
@@ -116,6 +126,7 @@ function handleShipPlacement(gridElement, playerBoard) {
             } else {
                 statusMessageElement.textContent = `${playerName}, place your ${ships[currentShipIndex].name} (${ships[currentShipIndex].length} spaces)`;
             }
+            // Remove and re-add mouseover handler
             gridElement.removeEventListener('mouseover', mouseoverHandler);
             gridElement.addEventListener('mousemove', () => {
                 gridElement.addEventListener('mouseover', mouseoverHandler);
@@ -123,15 +134,19 @@ function handleShipPlacement(gridElement, playerBoard) {
         } else {
             console.log('Failed to place ship due to overlap or invalid position');
         }
-    });
+    };
 
-    gridElement.addEventListener('mouseover', mouseoverHandler);
-
-    document.addEventListener('keydown', (e) => {
+    // Define the rotate ship handler
+    rotateShipHandler = function (e) {
         if (e.key === 'r') {
             rotateShip();
         }
-    });
+    };
+
+    // Add event listeners
+    gridElement.addEventListener('click', clickHandler);
+    gridElement.addEventListener('mouseover', mouseoverHandler);
+    document.addEventListener('keydown', rotateShipHandler);
 }
 
 
@@ -250,7 +265,7 @@ function handleComputerAttack() {
         endGame('computer');
     } else {
         // Add a delay before handing control back to the player
-        setTimeout(() => {
+        computerAttackTimeout = setTimeout(() => {
             GridView.updateStatus("Player's turn!");
         }, 1500); // Delay to ensure the computer's attack result is visible
     }
@@ -275,6 +290,12 @@ function endGame(winner) {
     }
 
     disablePlayerActions(); // Disable clicking on grids once the game ends
+
+        // Remove attack event listener
+        if (playerAttackHandler) {
+            computerGridElement.removeEventListener('click', playerAttackHandler);
+            playerAttackHandler = null;
+        }
 
     // Show the restart button
     const restartButton = document.getElementById('restart-btn');
@@ -354,49 +375,80 @@ function handleAttackResult(attackResult, x, y, attacker = 'computer') {
 }
 
 
+function removeShipPlacementEventListeners() {
+    if (clickHandler) {
+        playerGridElement.removeEventListener('click', clickHandler);
+        clickHandler = null;
+    }
+    if (mouseoverHandler) {
+        playerGridElement.removeEventListener('mouseover', mouseoverHandler);
+        mouseoverHandler = null;
+    }
+    if (rotateShipHandler) {
+        document.removeEventListener('keydown', rotateShipHandler);
+        rotateShipHandler = null;
+    }
+}
 
 
 // Restart game functionality
-function startGame() { 
+function startGame() {
+        // Clear existing timeouts
+        if (computerAttackTimeout) {
+            clearTimeout(computerAttackTimeout);
+            computerAttackTimeout = null;
+        }
+    // Remove existing event listeners before starting the game
+    removeShipPlacementEventListeners();
+    if (playerAttackHandler) {
+        computerGridElement.removeEventListener('click', playerAttackHandler);
+        playerAttackHandler = null;
+    }
 
+    // Re-initialize grid elements
     playerGridElement = getPlayerGridElement();
     computerGridElement = getComputerGridElement();
-        // Add the 'game-started' class to the game container
- 
 
     if (!playerGridElement || !computerGridElement) {
         console.error('Grid elements are not initialized properly. Aborting startGame.');
         return;
     }
 
+    // Reset game boards
     playerBoard.reset();
     computerBoard.reset();
 
-
-
+    // Reset player
+    computer.reset();
+    // Clear grids
     GridView.clearGrid(playerGridElement);
     GridView.clearGrid(computerGridElement);
 
+    // Reset UI
     const gridContainer = document.querySelector('.grid-container');
     gridContainer.classList.remove('slide-left', 'show-battle');
-
-    
-      const gameContainer = document.getElementById('game-container');
-      gameContainer.classList.remove('game-started');
-
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.classList.remove('game-started');
     computerGridElement.style.visibility = 'hidden';
     playerGridElement.style.visibility = 'visible';
+    toggleAxisButton.style.display = 'block';
+    restartButton.style.display = 'none';
 
-    enablePlayerActions();
-
+    // Reset game state variables
     currentShipIndex = 0;
     allShipsPlaced = false;
+    isHorizontal = true; // Reset orientation
+
+    // Update status message
     GridView.updateStatus(`Hi ${playerName}! Place your ships to begin the game.`);
 
-    toggleAxisButton.style.display = 'block';
+    // Re-enable player actions
+    enablePlayerActions();
 
+    // Set up event listeners for ship placement
     handleShipPlacement(playerGridElement, playerBoard);
 }
+
 
 // Export startGame for the entry point
 export default { startGame };
