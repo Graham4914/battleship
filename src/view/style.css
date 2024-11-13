@@ -57,16 +57,10 @@ body {
 }
 
 #start-screen h1 {
-font-size: 150px;
-color: #fff;
-stroke: #000;
-
+    font-size: 150px;
+    color: #fff;
+    stroke: #000;
 }
-
-
-
-
-
 
 /* Flexbox container for the entire game */
 .game-container {
@@ -79,6 +73,7 @@ header {
     width: 100%;
     text-align: center;
 }
+
 /* Header styling */
 header h1 {
     font-size: 3rem;
@@ -103,21 +98,22 @@ header h1 {
     max-width: 100vw;
     margin: 0 40px;
     /* gap: 100px; */
-    transition: width 0.5s ease, justify-content 0.5s ease;
     position: relative;
-}
 
+    /* [Addition] Ensure transitions apply when classes are added or removed */
+    transition: width 0.5s ease, justify-content 0.5s ease;
+}
 
 .grid-section {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 /* Show grid headers when game has started */
 .game-container.game-started .grid-section h2 {
     display: block;
 }
-
 
 .grid-section h2 {
     display: none;
@@ -132,6 +128,7 @@ header h1 {
     display: block;
     opacity: 1;
 }
+
 /* Styling for individual grids (player and computer) */
 .grid {
     display: grid;
@@ -148,7 +145,9 @@ header h1 {
     width: 0;
     height: 0;
     overflow: hidden;
-    transition: opacity 0.5s ease, width 0s 0.5s, height 0s 0.5s;  /* Reveal after 0.5s */
+
+    /* [Modification] Adjust transitions for width and height */
+    transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
 
 /* When battle phase starts, show the computer grid */
@@ -156,13 +155,20 @@ header h1 {
     opacity: 1;
     width: 520px;  /* Set the correct width for the grid */
     height: auto;
-    transition: opacity 0.5s ease; /* Remove width/height transition delay */
+
+    /* [Modification] Ensure transitions match for smooth animation */
+    transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
 
 /* Slide effect for player grid */
 .grid-container.slide-left {
     justify-content: space-between; /* Move the player grid to the left */
     width: 1500px; /* Expand the container width for both grids */
+}
+
+/* [Addition] Transition settings for reverse animation */
+.grid-container.slide-left, .grid-container {
+    transition: width 0.5s ease, justify-content 0.5s ease;
 }
 
 /* Grid cells */
@@ -232,13 +238,12 @@ header h1 {
 #toggle-axis-btn {
     transition: opacity 0.5s ease;
 }
-/* hits and misses on player grids */
+
+/* Hits and misses on grids */
 .cell.hit,
 .cell.placed-ship.hit {
     background-color: red;  /* Mark hits with red */
 }
-
-
 
 .cell.miss {
     background-color: blue;  /* Mark misses with blue */
@@ -253,8 +258,6 @@ header h1 {
 }
 
 #restart-btn {
-    
-   
     padding: 10px 20px;
     font-size: 1rem;
     background-color: #4CAF50;  /* Green background */
@@ -267,21 +270,6 @@ header h1 {
 #restart-btn:hover {
     background-color: #45a049;  /* Darker green on hover */
 }
-
-
-/* .cell {
-    width: 40px;
-    height: 40px;
-    border: 1px solid #333;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 16px;
-    cursor: pointer;
-} */
-
-
-
 
 /* Responsive layout */
 @media (max-width: 768px) {
@@ -300,4 +288,12 @@ header h1 {
     visibility: visible !important;
     opacity: 1 !important;
     color: black !important;  /* Ensure text is visible */
+}
+
+/* [Addition] Smooth transition when hiding the computer grid */
+.grid-container:not(.show-battle) #computer-grid {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
