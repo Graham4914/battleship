@@ -242,7 +242,7 @@ export function Player(isComputer = false) {
         }
     
         console.log("Active Targets at end:", JSON.stringify(activeTargets));
-        return { coords: attackCoords, result: attackResult.result };
+        return { coords: attackCoords, result: attackResult.result, ship: attackResult.ship || null, };
     }
     
     

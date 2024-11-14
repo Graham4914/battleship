@@ -278,6 +278,14 @@ header {
     background-color: rgba(0, 0, 255, 0.7); /* Slightly transparent blue */
 }
 
+.cell.clicked {
+    
+    cursor: default; /* Optional: Change cursor to indicate the cell has been clicked */
+}
+
+.cell.clicked:hover {
+    background-color: initial; /* Remove the hover color */
+}
 .restart-container {
     position: relative;
    padding-top: 20px;

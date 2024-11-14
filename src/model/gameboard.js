@@ -137,7 +137,8 @@ ships.forEach(ship => {
 function receiveAttack([x, y]) {
 
     console.log(`Attacking cell: (${x}, ${y})`);
-console.log(`Ship cells:`, shipCells); // 
+    console.log(`Ship cells:`, shipCells); // 
+    
     // Ensure x and y are within valid bounds
     if (typeof x !== 'number' || typeof y !== 'number' || x < 0 || x >= 10 || y < 0 || y >= 10) {
         console.error(`Invalid attack coordinates: (${x}, ${y})`);
