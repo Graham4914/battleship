@@ -218,25 +218,21 @@ function addPlayerAttackListener() {
     // Define the event handler function
     playerAttackHandler = function (e) {
         const cell = e.target;
-      
-
         if (cell.classList.contains('hit') || cell.classList.contains('miss')) return;
-
-        if (cell.classList.contains('clicked')) return;
-
-        // // Add 'clicked' class to remove hover effect and show instant feedback
-        // cell.classList.add('clicked');
-        // cell.style.pointerEvents = 'none'; // Prevent further interactions with the cell
-        // cell.offsetHeight; // Trigger reflow to immediately apply the class change
-
 
         const cellIndex = Array.from(computerGridElement.children).indexOf(cell);
         const x = Math.floor(cellIndex / 10);
         const y = cellIndex % 10;
 
-
-
         const attackResult = player.attack(computerBoard, [x, y]);  // Player attacks the computer
+
+        // **Update the cell's class immediately upon click**
+        if (attackResult.result === 'hit' || attackResult.result === 'sunk') {
+            cell.classList.add('hit');
+        } else if (attackResult.result === 'miss') {
+            cell.classList.add('miss');
+        }
+
         handleAttackResult(attackResult, x, y, 'player');
 
         if (computerBoard.allShipsSunk()) {
@@ -345,36 +341,42 @@ startGameBtn.addEventListener('click', () => {
 function handleAttackResult(attackResult, x, y, attacker = 'computer') {
     const { result, ship } = attackResult;
 
-    if (result === 'already_attacked') {  // Change this line
+    if (result === 'already_attacked') {
         console.warn("Attempted attack on already attacked cell.");
         return;
     }
+
     // Determine which grid and which cell to target
     const gridElement = (attacker === 'computer') ? playerGridElement : computerGridElement;
-    const cell = gridElement.children[x * 10 + y]; 
+    const cell = gridElement.children[x * 10 + y];
 
     // Log the attack result
-    console.log(`${attacker.charAt(0).toUpperCase() + attacker.slice(1)} attack result: ${attackResult.result} at (${x}, ${y})`);
+    console.log(`${attacker.charAt(0).toUpperCase() + attacker.slice(1)} attack result: ${result} at (${x}, ${y})`);
 
-    // Delay the visual update to synchronize with the game flow and provide better feedback
     setTimeout(() => {
-        if (result === 'hit') {
-            cell.classList.add('hit');
-            GridView.updateStatus(`${attacker === 'computer' ? 'Computer' : playerName} hit a ship!`,900);
-        } else if (result === 'sunk') {
-            cell.classList.add('hit');
-            console.log('Ship object in handleAttackResult:', ship); // Check the ship object
-            const shipName = ship ? ship.name : 'a ship';
-            GridView.updateStatus(`${attacker === 'computer' ? `Computer sank your ${shipName}!` : `${playerName} sank the enemy's ${shipName}!`}`);
-        } else if (result === 'miss') {
-            cell.classList.add('miss');
-            GridView.updateStatus(`${attacker === 'computer' ? 'Computer' : playerName} missed!`,900);
+        if (attacker === 'computer') {
+            // **For computer's attack, update the cell's class**
+            if (result === 'hit' || result === 'sunk') {
+                cell.classList.add('hit');
+                GridView.updateStatus(`Computer ${result === 'sunk' ? `sank your ${ship.name}!` : 'hit your ship!'}`, 900);
+            } else if (result === 'miss') {
+                cell.classList.add('miss');
+                GridView.updateStatus('Computer missed!', 900);
+            }
         } else {
-            console.error('Invalid attack result');
+            // **For player's attack, we've already updated the cell's class**
+            if (result === 'sunk') {
+                const shipName = ship ? ship.name : 'a ship';
+                GridView.updateStatus(`${playerName} sank the enemy's ${shipName}!`);
+            } else if (result === 'hit') {
+                GridView.updateStatus(`${playerName} hit a ship!`, 900);
+            } else if (result === 'miss') {
+                GridView.updateStatus(`${playerName} missed!`, 900);
+            }
         }
-
-    }, 200); // 200ms delay to ensure the feedback feels natural
+    }, 200);
 }
+
 
 
 function removeShipPlacementEventListeners() {

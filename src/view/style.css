@@ -221,7 +221,7 @@ header {
      border: 1px solid rgba(0, 0, 0, 0.3);; /* Add a subtle border for definition */
 }
 
-.grid div:hover {
+.grid div:not(.hit):not(.miss):hover {
     background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
     transition: background-color 0.3s ease;
     border-color: #000;  /* Darkens the grid line on hover */
@@ -257,9 +257,15 @@ header {
     margin: 0 auto;
     position: relative;
     text-align: center;
-
+    transition: transform 0.3s ease; /* Include transform in transition */
 }
 
+#toggle-axis-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* More opaque background on hover */
+    color: #fff; /* Slightly lighter black text */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Enhanced glow on hover */
+    
+}
 
 
 
@@ -269,23 +275,34 @@ header {
     color: #ccc; /* Light gray for subtlety */
 }
 /* Hits and misses on grids */
-.cell.hit,
+/* .cell.hit,
 .cell.placed-ship.hit {
-    background-color: rgba(255, 0, 0, 0.9); /* Slightly transparent red */
+    background-color: rgba(255, 0, 0, 0.9); 
 }
 
 .cell.miss {
+    background-color: rgba(0, 0, 255, 0.7); 
+} */
+/* Hits and misses on grids */
+.grid div.hit,
+.grid div.placed-ship.hit {
+    background-color: rgba(255, 0, 0, 0.9); /* Slightly transparent red */
+}
+
+.grid div.miss {
     background-color: rgba(0, 0, 255, 0.7); /* Slightly transparent blue */
 }
 
-.cell.clicked {
-    
-    cursor: default; /* Optional: Change cursor to indicate the cell has been clicked */
-}
 
-.cell.clicked:hover {
-    background-color: initial; /* Remove the hover color */
-}
+
+/* .cell.clicked {
+    
+    cursor: default; 
+} */
+
+/* .cell.clicked:hover {
+    background-color: initial;
+} */
 .restart-container {
     position: relative;
    padding-top: 20px;
