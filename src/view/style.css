@@ -46,7 +46,7 @@ header h1 {
 }
 
 /* Style for the input field */
-#start-screen input[type="text"] {
+#player-name-input   {
     font-size: 1.2em;
     padding: 10px;
     margin: 10px 0;
