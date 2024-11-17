@@ -75,6 +75,7 @@ header h1 {
     font-size: 150px;
     color: #fff;
     stroke: #000;
+    font-weight: 800;
 }
 
 /* Flexbox container for the entire game */
@@ -123,21 +124,23 @@ header {
 .grid-container {
     display: flex;
     justify-content: center;  /* Center the player grid */
-    width: 600px;  /* Set width for the player grid */
-    max-width: 100vw;
+    width: 80vw;  /* Set width for the player grid */
+    max-width: 80vw;
+    min-width: 600px;
     margin: 0 40px 50px;
-    /* gap: 100px; */
     position: relative;
-
+    padding: 0 20px;
     /* [Addition] Ensure transitions apply when classes are added or removed */
-    transition: width 0.5s ease, justify-content 0.5s ease;
+    transition: width .5s ease-in-out;
 }
 
 .grid-section {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.5s ease-in-out;
 }
+
 
 /* Show grid headers when game has started */
 .game-container.game-started .grid-section h2 {
@@ -174,31 +177,47 @@ header {
     width: 0;
     height: 0;
     overflow: hidden;
-
     /* [Modification] Adjust transitions for width and height */
-    transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
+  
 }
 
+/* .grid-container.slide-left.show-battle {
+    gap: 100px;
+} */
 /* When battle phase starts, show the computer grid */
+.grid-container.show-battle #player-grid,
 .grid-container.show-battle #computer-grid {
     opacity: 1;
-    width: 520px;  /* Set the correct width for the grid */
+    width: 100%;  /* Set the correct width for the grid */
     height: auto;
-
-    /* [Modification] Ensure transitions match for smooth animation */
-    transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
+   
 }
 
 /* Slide effect for player grid */
 .grid-container.slide-left {
-    justify-content: space-between; /* Move the player grid to the left */
-    width: 1500px; /* Expand the container width for both grids */
+    justify-content: space-around; 
+    width: 100vw; /* Expand the container width for both grids */
+    /* transition: transform 2s ease-in-out, opacity 2s ease-in-out; */
+    gap: 50px;
+}
+
+.grid-container.slide-left .grid-section:first-child {
+    transform: translateX(-15%); /* Slide the player grid to the left */
+    transition: transform .5s ease-in-out, opacity .5s ease-in-out;
+}
+
+.grid-container.slide-left .grid-section:last-child {
+    transform: translateX(15%); /* Computer grid starts off-screen */
+    opacity: 1; /* Hide the computer grid initially */
+    transition: transform .5s ease-in-out, opacity .5s ease-in-out;
 }
 
 /* [Addition] Transition settings for reverse animation */
 .grid-container.slide-left, .grid-container {
-    transition: width 0.5s ease, justify-content 0.5s ease;
+    transition: width 0.5s ease, opacity 0.5s ease;
 }
+
+
 
 /* Grid cells */
 .grid div {
@@ -274,16 +293,7 @@ header {
     font-size: 0.8em; /* Smaller font for the hint */
     color: #ccc; /* Light gray for subtlety */
 }
-/* Hits and misses on grids */
-/* .cell.hit,
-.cell.placed-ship.hit {
-    background-color: rgba(255, 0, 0, 0.9); 
-}
 
-.cell.miss {
-    background-color: rgba(0, 0, 255, 0.7); 
-} */
-/* Hits and misses on grids */
 .grid div.hit,
 .grid div.placed-ship.hit {
     background-color: rgba(255, 0, 0, 0.9); /* Slightly transparent red */
@@ -295,14 +305,7 @@ header {
 
 
 
-/* .cell.clicked {
-    
-    cursor: default; 
-} */
 
-/* .cell.clicked:hover {
-    background-color: initial;
-} */
 .restart-container {
     position: relative;
    padding-top: 20px;
@@ -333,17 +336,6 @@ header {
     background-color: #45a049;  /* Darker green on hover */
 }
 
-/* Responsive layout */
-@media (max-width: 768px) {
-    .grid-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .grid {
-        margin-bottom: 20px;
-    }
-}
 
 
 /* [Addition] Smooth transition when hiding the computer grid */
@@ -353,3 +345,107 @@ header {
     height: 0;
     transition: opacity 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
+
+/* Adjust grid cell size for smaller screens */
+@media (max-width: 1424px) {
+    .grid div {
+        width: 40px;
+        height: 40px;
+    }
+    .grid {
+        grid-template-columns: repeat(10, 40px);
+        grid-template-rows: repeat(10, 40px);
+    }
+}
+
+@media (max-width: 1100px) {
+    .grid div {
+        width: 30px;
+        height: 30px;
+    }
+    .grid {
+        grid-template-columns: repeat(10, 30px);
+        grid-template-rows: repeat(10, 30px);
+    }
+    header h1 {
+        margin-bottom: 0;
+    }
+    .restart-container {
+        margin: 0;
+    }
+    .grid-container.slide-left.show-battle {
+        gap: 20px;
+    }
+
+}
+
+@media (max-width: 935px) {
+    #start-screen h1 {
+        font-size: 100px;
+
+    }
+    .grid div {
+        width: 28px;
+        height: 28px;
+    }
+    .grid {
+        grid-template-columns: repeat(10, 28px);
+        grid-template-rows: repeat(10, 28px);
+    }
+    header h1 {
+        display: none;
+        margin-bottom: 0;
+    }
+    .restart-container {
+        margin: 0;
+        padding-top: 0;
+    }
+    .grid-container.slide-left.show-battle {
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+    .status-message-container {
+       margin-top: 10px;
+       min-height: 15px;
+    }
+    .status-message {
+        padding:5px;
+    }
+    .grid-section h2 {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+}
+/* Hide the game content when in portrait mode */
+@media only screen and (orientation: portrait) {
+    .game-container {
+      display: none;
+    }
+    .orientation-warning {
+      display: flex;
+    }
+  }
+  
+  /* Show the game content when in landscape mode */
+  @media only screen and (orientation: landscape) {
+    .game-container {
+      display: flex;
+    }
+    .orientation-warning {
+      display: none;
+    }
+  }
+  
+  /* Style the orientation warning */
+  .orientation-warning {
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    background-color: #000; /* Background color */
+    color: #fff; /* Text color */
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  

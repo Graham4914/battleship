@@ -236,8 +236,8 @@ function addPlayerAttackListener() {
         handleAttackResult(attackResult, x, y, 'player');
 
         if (computerBoard.allShipsSunk()) {
-            GridView.updateStatus('You win! All enemy ships are sunk!');
-            endGame('player');
+            GridView.updateStatus('You win! All enemy ships are sunk!',2000);
+            endGame();
         } else {
             setTimeout(() => {
                 GridView.updateStatus("Computer's turn...");
@@ -265,7 +265,7 @@ function handleComputerAttack() {
 
     // Check if the player has lost all ships
     if (playerBoard.allShipsSunk()) {
-        GridView.updateStatus('Computer wins! All your ships are sunk.');
+        GridView.updateStatus('Computer wins! All your ships are sunk.',2000);
         endGame('computer');
     } else {
         // Add a delay before handing control back to the player
