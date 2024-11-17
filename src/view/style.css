@@ -214,36 +214,36 @@ header {
 
 /* [Addition] Transition settings for reverse animation */
 .grid-container.slide-left, .grid-container {
-    transition: width 0.5s ease, opacity 0.5s ease;
+    transition: width 0.5s ease, opacity 0.5s ease justify-content 0.5 ease;
 }
 
 
 
 /* Grid cells */
 .grid div {
-    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent grid cells */
+    background-color: rgba(255, 255, 255, 0.1); 
     width: 50px;
     height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.1); /* Light border for visibility */
+    border: 1px solid rgba(0, 0, 0, 0.1); 
 }
 
 .grid div.highlight {
-    background-color: rgba(0, 128, 0, 0.5); /* Green highlight for hover */
+    background-color: rgba(0, 128, 0, 0.5); 
 }
 
 .grid div.placed-ship {
-    background-color: #1e90ff;  /* Blue color for placed ships */
-     border: 1px solid rgba(0, 0, 0, 0.3);; /* Add a subtle border for definition */
+    background-color: #1e90ff;  
+     border: 1px solid rgba(0, 0, 0, 0.3);; 
 }
 
 .grid div:not(.hit):not(.miss):hover {
-    background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
+    background-color: rgba(0, 0, 0, 0.1); 
     transition: background-color 0.3s ease;
-    border-color: #000;  /* Darkens the grid line on hover */
+    border-color: #000;  
 }
 
 /* Player Grid */
@@ -262,35 +262,35 @@ header {
 
 
 #toggle-axis-btn {
-    background-color: transparent; /* Transparent background */
-    color: white; /* White text */
-    border: solid 1px #fff; /* Remove border */
-    padding: 10px 15px; /* Add padding for better touch area */
-    font-size: 16px; /* Adjust font size as needed */
+    background-color: transparent; 
+    color: white; 
+    border: solid 1px #fff; 
+    padding: 10px 15px; 
+    font-size: 16px; 
     cursor: pointer;
-    border-radius: 5px; /* Optional: rounded corners */
+    border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Subtle glow */
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); 
 
     display: block;
     margin: 0 auto;
     position: relative;
     text-align: center;
-    transition: transform 0.3s ease; /* Include transform in transition */
+    transition: transform 0.3s ease; 
 }
 
 #toggle-axis-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* More opaque background on hover */
-    color: #fff; /* Slightly lighter black text */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Enhanced glow on hover */
+    background-color: rgba(255, 255, 255, 0.2); 
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); 
     
 }
 
 
 
 #toggle-axis-btn::after {
-    content: " (R)"; /* Displays "(R)" after the button text */
-    font-size: 0.8em; /* Smaller font for the hint */
+    content: " (R)"; 
+    font-size: 0.8em; 
     color: #ccc; /* Light gray for subtlety */
 }
 
@@ -317,15 +317,15 @@ header {
 
 #restart-btn {
     position: absolute;
-    top: 50%; /* Center vertically within the container */
-    left: 50%; /* Center horizontally */
-    transform: translate(-50%, -50%); /* Adjust to ensure perfect centering */
-    display: none; /* Hidden by default */
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    display: none; 
     font-size: 1rem;
-    background-color: transparent; /* Transparent background */
-    border: solid 1px #fff; /* Remove border */
-    padding: 10px 15px; /* Add padding for better touch area */
-    font-size: 16px; /* Adjust font size as needed */
+    background-color: transparent; 
+    border: solid 1px #fff; 
+    padding: 10px 15px; 
+    font-size: 16px; 
     cursor: pointer;
     color: white;
     border-radius: 5px;
@@ -333,7 +333,7 @@ header {
 }
 
 #restart-btn:hover {
-    background-color: #45a049;  /* Darker green on hover */
+    background-color: #45a049; 
 }
 
 

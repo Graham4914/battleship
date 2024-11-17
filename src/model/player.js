@@ -11,7 +11,7 @@ export function Player(isComputer = false) {
             y = Math.floor(Math.random() * 10);
             coords = [x, y];
         } while (previousMoves.has(coords.toString()));
-        console.log("Generated random attack coordinates:", coords);
+      
         return coords;
     }
 
@@ -26,7 +26,6 @@ export function Player(isComputer = false) {
             reversed: false,
             triedAxes: new Set()
         };
-        console.log("Handling first hit. Created new target:", JSON.stringify(target));
         activeTargets.push(target);
         return target;
     }
@@ -55,7 +54,6 @@ export function Player(isComputer = false) {
         let hitsToUse = target.unsunkHits && target.unsunkHits.length > 0 ? target.unsunkHits : target.hits;
     
         if (!hitsToUse || hitsToUse.length === 0) {
-            console.error('No hits to use for axis alignment');
             return [];
         }
     
@@ -68,11 +66,7 @@ export function Player(isComputer = false) {
         const minY = Math.min(...yValues);
         const maxY = Math.max(...yValues);
     
-        console.log(`\n--- Generating Axis-Aligned Cells ---`);
-        console.log(`Attack axis: ${attackAxis}, Current direction: ${direction}`);
-        console.log(`Hits:`, JSON.stringify(hitsToUse));
-        console.log(`minX: ${minX}, maxX: ${maxX}, minY: ${minY}, maxY: ${maxY}`);
-    
+
         // Generate potential targets based on the axis and direction
         if (attackAxis === 'horizontal') {
             const nextY = direction === 'positive' ? maxY + 1 : minY - 1;
@@ -86,7 +80,6 @@ export function Player(isComputer = false) {
             }
         }
     
-        console.log("New potential targets after axis alignment:", JSON.stringify(potentialTargets));
         return potentialTargets;
     }
     
@@ -94,20 +87,15 @@ export function Player(isComputer = false) {
     
     
     function computerAttack(gameboard, testAttackCoords = null) {
-        console.log("\n=== Computer Attack Initiated ===");
-        console.log("Active Targets at start:", JSON.stringify(activeTargets));
     
         let attackCoords;
         let target = activeTargets[0]; // Fetch the first active target, if any
     
         if (testAttackCoords) {
             attackCoords = testAttackCoords;
-            console.log(`Using test attack coordinates: ${attackCoords}`);
         } else if (!target) {
             attackCoords = randomAttack();
-            console.log("No active target. Random attack selected:", attackCoords);
         } else {
-            console.log("Current target:", JSON.stringify(target));
     
             while (true) {
                 if (target.potentialTargets.length === 0) {
@@ -115,7 +103,6 @@ export function Player(isComputer = false) {
                         // Reverse direction
                         target.direction = target.direction === 'positive' ? 'negative' : 'positive';
                         target.reversed = true;
-                        console.log(`Reversing direction to ${target.direction}`);
                         target.potentialTargets = getAxisAlignedCells(target);
                     } else {
                         // Both directions exhausted
@@ -128,7 +115,6 @@ export function Player(isComputer = false) {
                                 target.attackAxis = perpendicularAxis;
                                 target.direction = 'positive';
                                 target.reversed = false;
-                                console.log(`Switching to perpendicular axis: ${target.attackAxis}`);
                                 target.potentialTargets = [];
     
                                 target.unsunkHits.forEach(hit => {
@@ -141,20 +127,16 @@ export function Player(isComputer = false) {
                                 });
                             } else {
                                 // Both axes tried
-                                console.log("Both axes exhausted. Removing target.");
                                 activeTargets = activeTargets.filter(t => t !== target);
                                 target = null;
                                 attackCoords = randomAttack();
-                                console.log("Random attack selected after exhausting targets:", attackCoords);
                                 break;
                             }
                         } else {
                             // No unsunk hits left
-                            console.log("No unsunk hits left. Removing target.");
                             activeTargets = activeTargets.filter(t => t !== target);
                             target = null;
                             attackCoords = randomAttack();
-                            console.log("Random attack selected after exhausting targets:", attackCoords);
                             break;
                         }
                     }
@@ -162,7 +144,6 @@ export function Player(isComputer = false) {
     
                 if (target && target.potentialTargets.length > 0) {
                     attackCoords = target.potentialTargets.shift();
-                    console.log("Targeting potential adjacent cell:", attackCoords);
                     if (!previousMoves.has(`${attackCoords[0]},${attackCoords[1]}`)) {
                         break;
                     }
@@ -173,11 +154,9 @@ export function Player(isComputer = false) {
     
             if (!attackCoords) {
                 attackCoords = randomAttack();
-                console.log("No valid adjacent cell. Random attack selected:", attackCoords);
             }
         }
     
-        console.log("Final attack coordinates:", attackCoords);
     
         // Perform the attack and handle the result
         const attackResult = gameboard.receiveAttack(attackCoords);
@@ -188,19 +167,16 @@ export function Player(isComputer = false) {
             if (!target) {
                 // If no target was set, create a new one
                 target = handleFirstHit(attackCoords);
-                console.log("New target created after first hit:", JSON.stringify(target));
             } else {
                 // Append the hit coordinates to the current target's hits
                 target.hits.push(attackCoords);
                 target.unsunkHits.push(attackCoords);
-                console.log("Updated target after additional hit:", JSON.stringify(target));
             }
     
             // Determine attack axis if not set
             if (target.attackAxis === null) {
                 target.attackAxis = determineAttackAxis(target.hits);
                 if (target.attackAxis) {
-                    console.log(`Attack axis determined: ${target.attackAxis}`);
                     target.direction = 'positive';
                     target.reversed = false;
                     target.triedAxes.add(target.attackAxis);
@@ -214,16 +190,15 @@ export function Player(isComputer = false) {
                 target.potentialTargets = getAxisAlignedCells(target);
             }
     
-            // Remove hit from unsunkHits if ship is sunk
+            
             if (attackResult.result === 'sunk') {
-                console.log("Ship sunk!");
     
-                // Remove all hits belonging to the sunk ship from unsunkHits
+              
                 target.unsunkHits = target.unsunkHits.filter(coord =>
                     !attackResult.ship.positions.some(pos => pos.x === coord[0] && pos.y === coord[1])
                 );
     
-                // Remove hits from target.hits as well
+               
                 target.hits = target.hits.filter(coord =>
                     !attackResult.ship.positions.some(pos => pos.x === coord[0] && pos.y === coord[1])
                 );
@@ -231,33 +206,28 @@ export function Player(isComputer = false) {
                 if (target.unsunkHits.length === 0) {
                     // All ships in this cluster are sunk
                     activeTargets = activeTargets.filter(t => t !== target);
-                    console.log("All ships in cluster sunk. Removing target.");
                     target = null;
                 } else {
-                    console.log("Ships remain in cluster. Continuing attack.");
                     // Generate new potential targets along the same axis
                     target.potentialTargets = getAxisAlignedCells(target);
                 }
             }
         }
     
-        console.log("Active Targets at end:", JSON.stringify(activeTargets));
+    
         return { coords: attackCoords, result: attackResult.result, ship: attackResult.ship || null, };
     }
     
     
     
  function determineAttackAxis(hits) {
-    console.log("Determining attack axis based on hits:", JSON.stringify(hits));
-    if (hits.length < 2) return null;
+ if (hits.length < 2) return null;
 
     const [firstHit, secondHit] = hits;
 
     if (firstHit[0] === secondHit[0]) {
-        console.log("Hits are on the same row. Attack axis: horizontal");
         return 'horizontal';
     } else if (firstHit[1] === secondHit[1]) {
-        console.log("Hits are on the same column. Attack axis: vertical");
         return 'vertical';
     }
     return null;
@@ -273,9 +243,9 @@ function reset() {
         randomAttack,
         computerAttack,
         determineAttackAxis,
-        handleFirstHit,  // Expose handleFirstHit here
+        handleFirstHit,  
         getAdjacentCells,
-        reset,  // Expose getAdjacentCells for any isolated testing
+        reset,  
     };
 }
 

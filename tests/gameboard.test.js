@@ -22,7 +22,7 @@ describe('Gameboard Factory', () => {
         // Check that the ship is correctly referenced in the gameboard
         for (let i = 0; i < ship.length; i++) {
             console.log(`Expected cell (0, ${i}) to contain part of ship ${ship.name}`);
-            expect(gameboard.board[0 + i][0]).toEqual(ship); // Adjust this if you’re storing something else (e.g., an ID)
+            expect(gameboard.board[0 + i][0]).toEqual(ship); 
         }
     });
     

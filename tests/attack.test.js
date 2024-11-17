@@ -61,6 +61,6 @@ describe('Attack Logic', () => {
         gameboard.receiveAttack([2, 0]);
         gameboard.receiveAttack([2, 1]);
 
-        expect(gameboard.allShipsSunk()).toBe(true); // All ships should now be sunk
+        expect(gameboard.allShipsSunk()).toBe(true); 
     });
 });
